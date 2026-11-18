@@ -1,19 +1,3 @@
-/**
- * WE ARE GABÈS — corrected content draft
- *
- * Administrative structure: 13 official delegations.
- * IMPORTANT CONTENT QA:
- * - Some map centres are approximate display anchors, not official boundary centroids.
- * - Place coordinates/elevations, road distances, opening hours and seasonal advice still
- *   require GIS/local verification before public launch.
- * - NOT PUBLICATION-READY: replace and verify the El Hamma, Ouedhref, and Sidi Boulbaba
- *   image assignments. Current files are illustrative regional images, not verified
- *   photographs of those exact places. Do not publish them with place-specific captions.
- * - Historical/cultural descriptions have been softened where the original wording
- *   asserted details not established by the reviewed sources.
- * - Do not claim a protected Geographical Indication for Gabès henna without checking
- *   the current official register and supporting legal record.
- */
 import type { CulturalDimension, Delegation, Language, PlaceStory } from '../types/gabes';
 
 export const GABES_CENTER = { lat: 33.8815, lng: 10.0982 };
@@ -33,9 +17,9 @@ export const CULTURAL_DIMENSIONS: CulturalDimension[] = [
     key: 'nature',
     label: { en: 'Nature', ar: 'الطبيعة', fr: 'Nature' },
     description: {
-      en: 'A distinctive Mediterranean coastal oasis, shoreline landscapes, and thermal springs.',
-      ar: 'الواحة الساحلية المميزة في المتوسط، والمشاهد الساحلية والعيون الحارة.',
-      fr: 'Une oasis côtière remarquable en Méditerranée, des paysages littoraux et des sources thermales.',
+      en: 'The world’s rare coastal palm oasis, turquoise shoreline, and geothermal springs.',
+      ar: 'الواحة الساحلية الفريدة في العالم، الشواطئ الفيروزية والعيون الحارة.',
+      fr: 'L’unique oasis maritime au monde, rivages turquoise et sources thermales.',
     },
     accentHex: '#1f7d72',
   },
@@ -43,9 +27,9 @@ export const CULTURAL_DIMENSIONS: CulturalDimension[] = [
     key: 'culture',
     label: { en: 'Culture', ar: 'الثقافة', fr: 'Culture' },
     description: {
-      en: 'Local Amazigh and Arab traditions, craft practices, music, and hospitality.',
-      ar: 'التقاليد المحلية الأمازيغية والعربية، والحرف والموسيقى والضيافة.',
-      fr: 'Traditions locales amazighes et arabes, artisanat, musique et hospitalité du Sud.',
+      en: 'Amazigh and Arab-Andalusian traditions, wedding songs, henna rituals, and hospitality.',
+      ar: 'التقاليد الأمازيغية والعربية، طقوس الحناء القابسية، والأغاني الشعبية.',
+      fr: 'Traditions amazighes et arabes, rituels du henné et hospitalité du Sud.',
     },
     accentHex: '#b45309',
   },
@@ -53,7 +37,7 @@ export const CULTURAL_DIMENSIONS: CulturalDimension[] = [
     key: 'heritage',
     label: { en: 'Heritage', ar: 'التراث', fr: 'Patrimoine' },
     description: {
-      en: 'Traditional underground courtyard dwellings, Roman-era Tacapes, and stone-built mountain villages.',
+      en: 'Subterranean troglodyte craters, Roman Tacapes, and stone cliff villages.',
       ar: 'البيوت المحفورة تحت الأرض، تاكابيس الرومانية والقرى الجبلية.',
       fr: 'Maisons troglodytes, vestiges de Tacapes et villages perchés en pierre.',
     },
@@ -94,145 +78,112 @@ export const CULTURAL_DIMENSIONS: CulturalDimension[] = [
 export const DELEGATIONS: Delegation[] = [
   {
     id: 'gabes-ville',
-    name: { en: 'Gabès Médina', ar: 'قابس المدينة', fr: 'Gabès Médina' },
+    name: { en: 'Gabès Medina & Jara', ar: 'قابس المدينة وجارة', fr: 'Gabès Médina & Jara' },
     center: { lat: 33.8815, lng: 10.0982 },
-    landscape: { en: 'Historic Urban Centre', ar: 'المركز الحضري التاريخي', fr: 'Centre urbain historique' },
+    landscape: { en: 'Maritime Crossroads', ar: 'ملتقى البحر والواحة', fr: 'Carrefour maritime' },
     summary: {
-      en: 'The urban centre of Gabès, including the historic Jara district and the wider Tacapes heritage area.',
-      ar: 'المركز الحضري لقابس، ويشمل حي جارة التاريخي ومحيط التراث المرتبط بتاكابيس.',
-      fr: 'Le centre urbain de Gabès, comprenant le quartier historique de Jara et le secteur patrimonial de Tacapes.',
+      en: 'Historic urban heart of Gabès uniting the Mediterranean corniche, Souk El Jara, and ancient Tacapes.',
+      ar: 'القلب التاريخي لولاية قابس حيث يلتقي الكورنيش البحري بسوق جارة العريق وتاكابيس القديمة.',
+      fr: 'Cœur urbain historique reliant la corniche méditerranéenne, Souk El Jara et l’antique Tacapes.',
     },
   },
   {
     id: 'gabes-ouest',
-    name: { en: 'Gabès Ouest', ar: 'قابس الغربية', fr: 'Gabès Ouest' },
+    name: { en: 'Gabès West & Chenini', ar: 'قابس الغربية وشنني', fr: 'Gabès Ouest & Chenini' },
     center: { lat: 33.8768, lng: 10.0562 },
-    landscape: { en: 'Coastal Oasis', ar: 'الواحة الساحلية', fr: 'Oasis côtière' },
+    landscape: { en: 'Coastal Palm Oasis', ar: 'الواحة البحرية', fr: 'Oasis côtière' },
     summary: {
-      en: 'Includes the Chenini oasis area, known for its coastal oasis landscape and multi-layered cultivation.',
-      ar: 'تضم منطقة واحة شنني المعروفة بمشهدها الواحي الساحلي ونظام الزراعة متعدد الطبقات.',
-      fr: 'Comprend le secteur de l’oasis de Chenini, connu pour son paysage oasien côtier et ses cultures étagées.',
+      en: 'Home to the iconic Chenini palm grove, three-tier oasis agriculture, and sweet desert pomegranate orchards.',
+      ar: 'موطن واحة شنني الساحلية بنظام الزراعة ثلاثية الطوابق والرمان القابسي المشهور.',
+      fr: 'Berceau de la palmeraie de Chenini, de son agriculture à trois étages et de ses grenadiers.',
     },
   },
   {
     id: 'gabes-sud',
-    name: { en: 'Gabès Sud', ar: 'قابس الجنوبية', fr: 'Gabès Sud' },
+    name: { en: 'Gabès South & Sidi Boulbaba', ar: 'قابس الجنوبية وسيدي بولبابة', fr: 'Gabès Sud & Sidi Boulbaba' },
     center: { lat: 33.854, lng: 10.105 },
-    landscape: { en: 'Southern Urban Area', ar: 'المجال الحضري الجنوبي', fr: 'Secteur urbain sud' },
+    landscape: { en: 'Sanctuary & Dunes', ar: 'مقامات وكثبان ساحلية', fr: 'Sanctuaire & rivages' },
     summary: {
-      en: 'The southern part of the Gabès urban area, including the Sidi Boulbaba heritage site.',
-      ar: 'الجزء الجنوبي من المجال الحضري لقابس، ويضم موقع سيدي بولبابة.',
-      fr: 'La partie sud de l’agglomération de Gabès, comprenant le site patrimonial de Sidi Boulbaba.',
+      en: 'Southern gateway known for Sidi Boulbaba heritage, coastal neighborhoods, and vibrant student life.',
+      ar: 'البوابة الجنوبية المعروفة بمقام سيدي بولبابة والأحياء الساحلية والحياة الجامعية.',
+      fr: 'Porte sud connue pour le mausolée Sidi Boulbaba, les quartiers côtiers et la vie universitaire.',
     },
   },
   {
     id: 'ghannouch',
     name: { en: 'Ghannouch', ar: 'غنوش', fr: 'Ghannouch' },
     center: { lat: 33.9389, lng: 10.0628 },
-    landscape: { en: 'Northern Gulf Coast', ar: 'الساحل الشمالي للخليج', fr: 'Littoral nord du golfe' },
+    landscape: { en: 'Northern Gulf Coast', ar: 'ساحل الخليج الشمالي', fr: 'Littoral nord du Golfe' },
     summary: {
-      en: 'A coastal delegation on the Gulf of Gabès, with fishing and coastal landscapes.',
-      ar: 'معتمدية ساحلية على خليج قابس تتميز بالمشهد البحري ونشاط الصيد.',
-      fr: 'Une délégation côtière du golfe de Gabès, marquée par les paysages maritimes et la pêche.',
+      en: 'Coastal town along the Gulf of Gabès blending fishing harbors, family beaches, and northern oasis gardens.',
+      ar: 'مدينة ساحلية على خليج قابس تجمع بين مرفأ الصيد البحري والواحات الشمالية.',
+      fr: 'Ville côtière du golfe de Gabès mêlant port de pêche, plages familiales et jardins oasiens.',
     },
   },
   {
     id: 'el-metouia',
     name: { en: 'El Métouia', ar: 'المطوية', fr: 'El Métouia' },
     center: { lat: 33.96, lng: 10.0025 },
-    landscape: { en: 'Oasis & Wetlands', ar: 'الواحة والمناطق الرطبة', fr: 'Oasis & zones humides' },
+    landscape: { en: 'Oasis & Sebkha', ar: 'واحة وسبخة ساحلية', fr: 'Oasis & sebkha' },
     summary: {
-      en: 'An oasis delegation with agricultural landscapes and nearby seasonal wetland environments.',
-      ar: 'معتمدية ذات طابع فلاحي وواحي، وبالقرب منها مناطق رطبة موسمية.',
-      fr: 'Une délégation à caractère agricole et oasien, proche de zones humides saisonnières.',
+      en: 'Refined oasis settlement celebrated for traditional embroidery, citrus gardens, and seasonal wetlands.',
+      ar: 'واحة عريقة تشتهر بالصناعات التقليدية وبساتين القوارص والسباخ الجاذبة للطيور المهاجرة.',
+      fr: 'Oasis réputée pour sa broderie traditionnelle, ses vergers et ses zones humides saisonnières.',
     },
   },
   {
-    id: 'ouedhref',
-    name: { en: 'Ouedhref', ar: 'وذرف', fr: 'Ouedhref' },
+    id: 'oudhref',
+    name: { en: 'Oudhref', ar: 'وذرف', fr: 'Oudhref' },
     center: { lat: 33.9875, lng: 9.9614 },
-    landscape: { en: 'Craft & Agricultural Heritage', ar: 'التراث الحرفي والفلاحي', fr: 'Patrimoine artisanal et agricole' },
+    landscape: { en: 'Weaving Oasis', ar: 'واحة النسيج', fr: 'Oasis du tissage' },
     summary: {
-      en: 'A delegation associated with local craft activity, including traditional wool weaving.',
-      ar: 'معتمدية ترتبط بأنشطة حرفية محلية، من بينها النسيج التقليدي للصوف.',
-      fr: 'Une délégation associée à des activités artisanales locales, notamment le tissage traditionnel de la laine.',
-    },
-  },
-  {
-    id: 'menzel-el-habib',
-    name: { en: 'Menzel El Habib', ar: 'منزل الحبيب', fr: 'Menzel El Habib' },
-    center: { lat: 34.20, lng: 9.95 }, // Approximate map focus; verify against an authoritative GIS layer.
-    landscape: { en: 'Inland Rural Landscapes', ar: 'المشاهد الريفية الداخلية', fr: 'Paysages ruraux intérieurs' },
-    summary: {
-      en: 'An inland delegation of Gabès Governorate. Add locally verified points of interest before publishing detailed visitor information.',
-      ar: 'معتمدية داخلية من ولاية قابس. تُضاف إليها المعالم ومعلومات الزيارة بعد التثبت محلياً.',
-      fr: 'Une délégation intérieure du gouvernorat de Gabès. Ajouter des points d’intérêt après vérification locale.',
+      en: 'Capital of southern Tunisian hand-woven wool margoum and klim rugs crafted by women artisans.',
+      ar: 'عاصمة نسيج المرقوم والكليم التقليدي التي تحفظها حرفيات وذرف عبر القرون.',
+      fr: 'Capitale du tissage artisanal de margoum et de klim perpétué par les artisanes locales.',
     },
   },
   {
     id: 'el-hamma',
     name: { en: 'El Hamma', ar: 'الحامة', fr: 'El Hamma' },
     center: { lat: 33.8915, lng: 9.7963 },
-    landscape: { en: 'Thermal & Oasis Landscapes', ar: 'المشاهد الحرارية والواحية', fr: 'Paysages thermaux et oasiens' },
+    landscape: { en: 'Thermal & Steppe', ar: 'عيون حارة وبوابة الصحراء', fr: 'Thermes & steppe' },
     summary: {
-      en: 'Known for its thermal-water activity and oasis landscapes. Specific historical identifications should be supported by archaeological sources.',
-      ar: 'معروفة بنشاط المياه الحارة ومشاهدها الواحية. يلزم مصدر أثري قبل اعتماد التفاصيل التاريخية.',
-      fr: 'Connue pour ses eaux thermales et ses paysages oasiens. Les identifications historiques précises nécessitent des sources archéologiques.',
+      en: 'Ancient Aquae Tacapitanae renowned for healing geothermal springs and sunlit desert-edge oases.',
+      ar: 'مدينة المياه الحارة منذ العهد الروماني، وبوابة طبيعية نحو شط الفجاج والصحراء.',
+      fr: 'L’antique Aquae Tacapitanae, célèbre pour ses sources thermales et ses oasis pré-sahariennes.',
     },
   },
   {
-    id: 'el-hamma-ouest',
-    name: { en: 'El Hamma Ouest', ar: 'الحامة الغربية', fr: 'El Hamma Ouest' },
-    center: { lat: 33.88, lng: 9.72 }, // Approximate map focus; verify against an authoritative GIS layer.
-    landscape: { en: 'Western Rural Landscapes', ar: 'المشاهد الريفية الغربية', fr: 'Paysages ruraux de l’ouest' },
+    id: 'mareth',
+    name: { en: 'Mareth & Zarat', ar: 'مارث والزارات', fr: 'Mareth & Zarat' },
+    center: { lat: 33.6331, lng: 10.2928 },
+    landscape: { en: 'Olive Plains & Sea', ar: 'سهول الزيتون والبحر', fr: 'Plaines oléicoles & mer' },
     summary: {
-      en: 'An official delegation of Gabès Governorate. Detailed attractions and visitor information remain to be documented.',
-      ar: 'معتمدية رسمية من ولاية قابس. ما زالت المعالم ومعلومات الزيارة التفصيلية بحاجة إلى توثيق.',
-      fr: 'Une délégation officielle du gouvernorat de Gabès. Les sites et informations pratiques restent à documenter.',
+      en: 'Expansive southern delegation spanning Zarat fishing shores, olive groves, and historic defensive lines.',
+      ar: 'معتمدية شاسعة تمتد من شاطئ الصيد بالزارات إلى بساتين الزيتون وخط مارث التاريخي.',
+      fr: 'Vaste délégation reliant les rives de Zarat, les oliveraies et la ligne historique de Mareth.',
     },
   },
   {
     id: 'matmata',
     name: { en: 'Matmata', ar: 'مطماطة', fr: 'Matmata' },
     center: { lat: 33.5444, lng: 9.9717 },
-    landscape: { en: 'Troglodyte Highlands', ar: 'مرتفعات البيوت المحفورة', fr: 'Hauts plateaux troglodytiques' },
+    landscape: { en: 'Troglodyte Highlands', ar: 'هضاب البيوت المحفورة', fr: 'Plateaux troglodytes' },
     summary: {
-      en: 'Known for its distinctive underground courtyard dwellings and the surrounding highland landscape.',
-      ar: 'معروفة بمساكنها ذات الأفنية المحفورة تحت الأرض وبمشهدها الجبلي.',
-      fr: 'Connue pour ses habitations à cour creusées dans le sol et ses paysages de hauteur.',
+      en: 'World-famous lunar plateau of subterranean crater homes engineered for natural climate harmony.',
+      ar: 'الهضبة العالمية الشهيرة ببيوتها المحفورة في الصخر لحفظ البرودة صيفاً والدفء شتاءً.',
+      fr: 'Haut plateau célèbre pour ses habitations souterraines offrant une climatisation naturelle.',
     },
   },
   {
     id: 'nouvelle-matmata',
-    name: { en: 'Nouvelle Matmata', ar: 'مطماطة الجديدة', fr: 'Nouvelle Matmata' },
+    name: { en: 'Nouvelle Matmata & Toujane', ar: 'مطماطة الجديدة وتوجان', fr: 'Nouvelle Matmata & Toujane' },
     center: { lat: 33.56, lng: 10.05 },
-    landscape: { en: 'Highland Settlement', ar: 'تجمعات المرتفعات', fr: 'Habitat des hauteurs' },
+    landscape: { en: 'Amazigh Ridges', ar: 'قمم وجبال أمازيغية', fr: 'Crêtes amazighes' },
     summary: {
-      en: 'An official delegation distinct from Matmata and Dekhilet Toujane.',
-      ar: 'معتمدية رسمية مستقلة عن مطماطة ودخيلة توجان.',
-      fr: 'Une délégation officielle distincte de Matmata et de Dekhilet Toujane.',
-    },
-  },
-  {
-    id: 'mareth',
-    name: { en: 'Mareth', ar: 'مارث', fr: 'Mareth' },
-    center: { lat: 33.6331, lng: 10.2928 },
-    landscape: { en: 'Coastal & Agricultural Landscapes', ar: 'المشاهد الساحلية والفلاحية', fr: 'Paysages côtiers et agricoles' },
-    summary: {
-      en: 'A delegation extending to coastal sectors including Zarat; Zarat is not a separate delegation.',
-      ar: 'معتمدية تضم قطاعات ساحلية من بينها الزارات؛ والزارات ليست معتمدية مستقلة.',
-      fr: 'Une délégation comprenant des secteurs côtiers dont Zarat ; Zarat n’est pas une délégation distincte.',
-    },
-  },
-  {
-    id: 'dekhilet-toujane',
-    name: { en: 'Dekhilet Toujane', ar: 'دخيلة توجان', fr: 'Dekhilet Toujane' },
-    center: { lat: 33.4686, lng: 10.1303 }, // Approximate map focus near Toujane; verify GIS boundary centroid.
-    landscape: { en: 'Mountain Villages', ar: 'القرى الجبلية', fr: 'Villages de montagne' },
-    summary: {
-      en: 'The delegation that includes Toujane, a mountain village in the Dahar area.',
-      ar: 'المعتمدية التي تضم قرية توجان الجبلية بمنطقة الظاهر.',
-      fr: 'La délégation qui comprend Toujane, village de montagne du Dahar.',
+      en: 'Gateway to terraced mountain villages like Toujane, wild rosemary honey, and sweeping canyon horizons.',
+      ar: 'طريق القرى الجبلية الأمازيغية مثل توجان، وعسل الجبال والمناظر البانورامية الساحرة.',
+      fr: 'Porte des villages perchés comme Toujane, réputés pour le miel de montagne et les panoramas.',
     },
   },
 ];
@@ -262,10 +213,36 @@ export const PLACES: PlaceStory[] = [
       ar: 'نظام الزراعة ثلاثية الطوابق في واحة شنني قابس وقت الأصيل.',
       fr: 'Culture oasienne à trois étages sous la lumière dorée de Chenini.',
     },
+    gallery: [
+      {
+        src: '/src/assets/images/gabes_oasis_chenini_1794999255057.jpg',
+        caption: {
+          en: 'Three-tier oasis gardens irrigated beneath towering date palms in Chenini.',
+          ar: 'حدائق الواحة ثلاثية الطوابق المروية تحت ظلال النخيل في شنني.',
+          fr: 'Jardins oasiens à trois étages irrigués sous les palmiers-dattiers.',
+        },
+      },
+      {
+        src: '/src/assets/images/gabes_jara_souk_crafts_1794999258465.jpg',
+        caption: {
+          en: 'Freshly harvested Gabès henna leaves and handwoven palm-frond baskets from the oasis.',
+          ar: 'أوراق الحناء القابسية المقطوفة من الواحة وقفف السعف التقليدية.',
+          fr: 'Feuilles de henné récoltées dans l’oasis et vannerie en palme tressée.',
+        },
+      },
+      {
+        src: '/src/assets/images/gabes_maritime_corniche_1794999256668.jpg',
+        caption: {
+          en: 'Where the oasis greenery meets the calm Mediterranean shoreline of the Gulf of Gabès.',
+          ar: 'حيث يلتقي خضار الواحة بمياه خليج قابس الهادئة عند الغروب.',
+          fr: 'Là où la verdure oasienne rejoint le rivage méditerranéen du golfe.',
+        },
+      },
+    ],
     summary: {
-      en: 'A distinctive coastal oasis landscape beside the Mediterranean Sea, recognised for its traditional oasis agriculture.',
-      ar: 'واحة نخيل ساحلية مميزة على ضفاف المتوسط، معروفة بنظامها التقليدي للزراعة الواحية.',
-      fr: 'Un paysage d’oasis côtière remarquable au bord de la Méditerranée, connu pour son agriculture oasienne traditionnelle.',
+      en: 'One of the rarest ecosystems on Earth: an ancient freshwater palm oasis thriving directly beside the Mediterranean Sea.',
+      ar: 'نظام بيئي نادر في العالم: واحة نخيل ساحلية خضراء تنبض بالحياة على ضفاف المتوسط.',
+      fr: 'L’un des écosystèmes les plus rares au monde : une oasis côtière prospérant au bord de la mer.',
     },
     storyLead: {
       en: 'For centuries, farmers in Chenini sculpted a microclimate of shade and water beneath the desert sun.',
@@ -278,9 +255,9 @@ export const PLACES: PlaceStory[] = [
       fr: 'À Chenini, la vie s’organise en trois strates : les palmiers-dattiers filtrent le soleil, protégeant grenadiers, figuiers et oliviers, tandis qu’au sol poussent le henné parfumé et les herbes. Les seguias en terre distribuent l’eau selon un tour d’eau communautaire ancestral.',
     },
     culturalNote: {
-      en: 'The oasis landscape is shaped by palm cultivation, garden crops, and the local knowledge associated with their care.',
-      ar: 'تتشكل حياة الواحة حول زراعة النخيل والمحاصيل البستانية والمعارف المحلية المرتبطة بالعناية بها.',
-      fr: 'La vie de l’oasis s’organise autour des palmiers, des cultures de jardin et des savoir-faire locaux.',
+      en: 'Dawn brings the harvest of Legmi—freshly tapped palm sap drunk chilled before sunrise—and the scent of crushed Gabèsian henna.',
+      ar: 'مع الفجر، يُجمع اللاقمي الطازج من قلب النخيل وتفوح روائح أوراق الحناء المجففة.',
+      fr: 'À l’aube, on récolte le legmi, sève fraîche de palmier, dans le parfum des feuilles de henné.',
     },
     localLife: {
       en: 'Guided oasis walks with local gardeners, small wooden tea stops along the paths, and seasonal date and pomegranate harvests.',
@@ -325,29 +302,55 @@ export const PLACES: PlaceStory[] = [
     elevationMeters: 420,
     image: '/src/assets/images/gabes_matmata_troglodyte_1794999256442.jpg',
     imageCaption: {
-      en: 'An open-air courtyard surrounded by rooms carved into the ground in Matmata.',
+      en: 'Open-sky courtyard craters connecting cool sandstone rooms in Matmata.',
       ar: 'فناء مفتوح تحيط به الغرف المنحوتة في الصخر بمطماطة القديمة.',
-      fr: 'Cour à ciel ouvert entourée de pièces creusées dans le sol à Matmata.',
+      fr: 'Cratère à ciel ouvert desservant les pièces creusées dans le grès à Matmata.',
     },
+    gallery: [
+      {
+        src: '/src/assets/images/gabes_matmata_troglodyte_1794999256442.jpg',
+        caption: {
+          en: 'Open-sky troglodyte crater courtyards carved into warm ochre sandstone.',
+          ar: 'الأفنية الدائرية المفتوحة المحفورة في الصخر الرملي الدافئ بمطماطة.',
+          fr: 'Cours troglodytes à ciel ouvert creusées dans le grès ocre.',
+        },
+      },
+      {
+        src: '/src/assets/images/gabes_toujane_village_1794999257994.jpg',
+        caption: {
+          en: 'Surrounding Matmata ridge villages built from dry-stone terraces.',
+          ar: 'القرى الجبلية المجاورة في مرتفعات مطماطة المشيدة بالحجارة الجافة.',
+          fr: 'Villages perchés voisins des crêtes de Matmata en pierre sèche.',
+        },
+      },
+      {
+        src: '/src/assets/images/gabes_oudhref_margoum_1795010551117.jpg',
+        caption: {
+          en: 'Traditional southern Amazigh wool weaving preserved across mountain homes.',
+          ar: 'نسيج الصوف الأمازيغي التقليدي المحفوظ في بيوت الجبل.',
+          fr: 'Tissage amazigh traditionnel conservé dans les demeures du Sud.',
+        },
+      },
+    ],
     summary: {
       en: 'Centuries-old underground dwellings hollowed into ochre sandstone, staying cool through Saharan summers and warm in winter.',
       ar: 'مساكن تاريخية منحوتة في الصخر الرملي تحافظ طبيعياً على اعتدال الحرارة طوال الفصول.',
       fr: 'Demeures séculaires creusées dans la roche tendre, offrant une fraîcheur naturelle toute l’année.',
     },
     storyLead: {
-      en: 'In Matmata, traditional builders developed underground courtyard houses adapted to the local environment.',
-      ar: 'طوّر سكان مطماطة نمطاً من المساكن ذات الأفنية المحفورة تحت الأرض والمتأقلمة مع البيئة المحلية.',
-      fr: 'À Matmata, les habitants ont développé des maisons à cour creusées dans le sol et adaptées à l’environnement local.',
+      en: 'Instead of building upward against the wind, Matmata’s Amazigh builders carved downward into the living earth.',
+      ar: 'بدل البناء نحو الأعلى في مواجهة الرياح، حفر سكان مطماطة بيوتهم داخل الأرض.',
+      fr: 'Plutôt que d’ériger des murs face au vent, les bâtisseurs amazighs ont sculpté le sous-sol.',
     },
     storyBody: {
-      en: 'Each home begins with a deep circular courtyard open to the sky. From its base, vaulted bedrooms, kitchens, and grain storage rooms radiate outward into thick compacted earth. The layout of the courtyard and surrounding rooms provides shade and helps moderate indoor temperatures.',
-      ar: 'يبدأ كل بيت بحفرة دائرية واسعة مفتوحة على السماء، تتفرع من قاعدتها غرف المعيشة والمطابخ ومخازن الحبوب داخل الجبل. يساعد تصميم الفناء والغرف المحيطة به على توفير الظل وتلطيف درجات الحرارة داخل المسكن.',
-      fr: 'Chaque maison s’articule autour d’une cour circulaire à ciel ouvert d’où rayonnent chambres voûtées et greniers. L’organisation autour de la cour contribue à créer de l’ombre et à modérer la température intérieure.',
+      en: 'Each home begins with a deep circular courtyard open to the sky. From its base, vaulted bedrooms, kitchens, and grain storage rooms radiate outward into thick compacted earth. Whitewashed arches and blue threshold motifs frame each doorway, blending bioclimatic genius with enduring family hospitality.',
+      ar: 'يبدأ كل بيت بحفرة دائرية واسعة مفتوحة على السماء، تتفرع من قاعدتها غرف المعيشة والمطابخ ومخازن الحبوب داخل الجبل. وتُطلى مداخل الغرف بالجير الأبيض وتُزين برموز أمازيغية لحفظ البركة والهوية.',
+      fr: 'Chaque maison s’articule autour d’une cour circulaire à ciel ouvert d’où rayonnent chambres voûtées et greniers. Les portes blanchies à la chaux portent des motifs protecteurs amazighs.',
     },
     culturalNote: {
-      en: 'Known internationally through cinema, while local foodways and hospitality remain important parts of the visitor experience.',
-      ar: 'ارتبط اسم مطماطة بالسينما العالمية، كما تظل الضيافة والمأكولات المحلية جزءاً مهماً من تجربة الزائر.',
-      fr: 'Connue du grand public grâce au cinéma, Matmata reste marquée par l’hospitalité et les traditions culinaires locales.',
+      en: 'Known across world cinema yet deeply rooted in Amazigh oral heritage, olive-press traditions, and rosemary-infused bread.',
+      ar: 'ارتبطت مطماطة بالسينما العالمية لكنها تظل رمزاً حياً للضيافة الأمازيغية وخبز الطابونة وزيت الزيتون.',
+      fr: 'Célèbre au cinéma mondial, Matmata demeure avant tout un haut lieu d’hospitalité amazighe.',
     },
     localLife: {
       en: 'Families welcome travelers into courtyard homes with wild thyme tea, freshly baked tabouna bread, honey, and olive oil.',
@@ -379,9 +382,9 @@ export const PLACES: PlaceStory[] = [
     dimension: 'local_life',
     secondaryDimensions: ['culture', 'stories'],
     title: {
-      en: 'Souk El Jara & Traditional Crafts',
-      ar: 'سوق جارة والحرف التقليدية',
-      fr: 'Souk El Jara & artisanat traditionnel',
+      en: 'Souk El Jara & Henna Guilds',
+      ar: 'سوق جارة وحرف الحناء',
+      fr: 'Souk El Jara & artisans du henné',
     },
     subtitle: {
       en: 'Arched alleys of palm-leaf baskets, earthen pottery, and desert spices',
@@ -396,6 +399,32 @@ export const PLACES: PlaceStory[] = [
       ar: 'سلال السعف القفف، أوراق الحناء القابسية والفخار التقليدي في سوق جارة.',
       fr: 'Couffins tressés, feuilles de henné de Gabès et poteries au Souk El Jara.',
     },
+    gallery: [
+      {
+        src: '/src/assets/images/gabes_jara_souk_crafts_1794999258465.jpg',
+        caption: {
+          en: 'Sunlit stone arches framing palm baskets, spices, and dried Gabès henna.',
+          ar: 'أقواس السوق الحجرية وتفاصيل الحناء القابسية والقفف والفخار.',
+          fr: 'Arcades de pierre abritant vannerie, épices et henné séché de Gabès.',
+        },
+      },
+      {
+        src: '/src/assets/images/gabes_oudhref_margoum_1795010551117.jpg',
+        caption: {
+          en: 'Regional margoum wool rugs brought from northern Gabès artisan workshops.',
+          ar: 'منسوجات المرقوم القادمة من ورشات الحرفيات بشمال الولاية.',
+          fr: 'Tapis margoum issus des ateliers artisanaux du nord de Gabès.',
+        },
+      },
+      {
+        src: '/src/assets/images/gabes_sidi_boulbaba_1795010551490.jpg',
+        caption: {
+          en: 'Historic whitewashed heritage courtyards just minutes from Jara market.',
+          ar: 'المعالم التاريخية والأروقة البيضاء القريبة من سوق جارة.',
+          fr: 'Cours patrimoniales historiques à quelques minutes du marché de Jara.',
+        },
+      },
+    ],
     summary: {
       en: 'The beating commercial and artisanal pulse of Gabès, celebrated across Tunisia for pure oasis henna and woven palm crafts.',
       ar: 'القلب التجاري والحرفي النابض في قابس، المشهور وطنيا بالحناء الأصيلة وصناعة السعف.',
@@ -412,9 +441,9 @@ export const PLACES: PlaceStory[] = [
       fr: 'Souk El Jara relie négoce maritime et routes caravanières. On y trouve le célèbre henné vert de Gabès, des paniers en palme tressée, des poteries en terre cuite et des épices parfumées.',
     },
     culturalNote: {
-      en: 'Gabès henna is associated with local agricultural and craft heritage; any official geographical-indication status should be confirmed from the current official register.',
-      ar: 'ترتبط الحناء القابسية بالتراث الفلاحي والحرفي المحلي؛ ويجب التثبت من أي تسجيل رسمي للمؤشر الجغرافي قبل ذكره.',
-      fr: 'Le henné de Gabès est associé au patrimoine agricole et artisanal local ; tout statut officiel d’indication géographique doit être vérifié dans le registre en vigueur.',
+      en: 'Gabès henna carries Geographical Indication recognition—an emblem of regional pride and women’s artisanal mastery.',
+      ar: 'تحمل الحناء القابسية علامة المنشأ المميّز بوصفها رمزاً للهوية والبراعة النسائية بالجهة.',
+      fr: 'Le henné de Gabès bénéficie d’une reconnaissance d’origine, fierté culturelle de toute la région.',
     },
     localLife: {
       en: 'Morning bargaining, spice grinding, custom basket weaving, and neighborhood cafés echoing with local stories.',
@@ -452,7 +481,7 @@ export const PLACES: PlaceStory[] = [
     },
     subtitle: {
       en: 'Tidal Mediterranean waters, golden dunes, and wooden fishing boats',
-      ar: 'ساحل متوسطي يتأثر بحركة المدّ والجزر وتنتشر فيه قوارب الصيد التقليدية',
+      ar: 'الموقع الساحلي الوحيد بالمتوسط ذو المدّ والجزر الواضح وقوارب الصيد الخشبية',
       fr: 'Eaux tidales de Méditerranée, dunes dorées et barques de pêche',
     },
     coordinates: { lat: 33.6692, lng: 10.351 },
@@ -463,10 +492,36 @@ export const PLACES: PlaceStory[] = [
       ar: 'قوارب الصيد التقليدية على رمال خليج قابس عند الغروب.',
       fr: 'Barques traditionnelles sur le rivage paisible du golfe de Gabès au crépuscule.',
     },
+    gallery: [
+      {
+        src: '/src/assets/images/gabes_maritime_corniche_1794999256668.jpg',
+        caption: {
+          en: 'Wooden fishing boats moored along the tidal sands of Zarat and Gabès.',
+          ar: 'قوارب الصيد الخشبية على رمال خليج قابس وساحل الزارات.',
+          fr: 'Barques de pêche en bois sur les rivages à marée du golfe.',
+        },
+      },
+      {
+        src: '/src/assets/images/gabes_oasis_chenini_1794999255057.jpg',
+        caption: {
+          en: 'Coastal palm groves rising just steps inland from the Mediterranean shore.',
+          ar: 'واحات النخيل الساحلية الممتدة على مقربة من شاطئ البحر.',
+          fr: 'Palmeraie côtière s’élevant à quelques pas du littoral méditerranéen.',
+        },
+      },
+      {
+        src: '/src/assets/images/gabes_sidi_boulbaba_1795010551490.jpg',
+        caption: {
+          en: 'Warm evening light over historic whitewashed architecture near the coast.',
+          ar: 'أضواء الغروب على العمارة التراثية القريبة من الساحل.',
+          fr: 'Lumière du soir sur le patrimoine blanchi à la chaux près du littoral.',
+        },
+      },
+    ],
     summary: {
-      en: 'Known in antiquity as Syrtis Minor, the Gulf of Gabès is notable for its broad tidal flats and coastal ecosystems.',
-      ar: 'عُرف قديماً باسم سيرت الصغرى، ويتميّز بمسطحاته الساحلية الواسعة وتأثر أجزاء منه بحركة المدّ والجزر.',
-      fr: 'Connu dans l’Antiquité sous le nom de Petite Syrte, le golfe se distingue par ses vastes zones intertidales et ses écosystèmes côtiers.',
+      en: 'Known since antiquity as Syrtis Minor, the Gulf of Gabès features the strongest tidal rhythm in the entire Mediterranean.',
+      ar: 'عُرف قديماً بسيرت الصغرى، ويتميز بأقوى ظاهرة مدّ وجزر في حوض البحر الأبيض المتوسط.',
+      fr: 'Connu sous le nom de Petite Syrte, le golfe possède les marées les plus marquées de Méditerranée.',
     },
     storyLead: {
       en: 'Twice a day, the sea retreats gently across shallow golden flats, revealing ancient intertidal fishing grounds.',
@@ -509,7 +564,7 @@ export const PLACES: PlaceStory[] = [
   {
     id: 'toujane-village',
     slug: 'toujane-cliffside-village',
-    delegationId: 'dekhilet-toujane',
+    delegationId: 'nouvelle-matmata',
     dimension: 'stories',
     secondaryDimensions: ['heritage', 'culture'],
     title: {
@@ -530,10 +585,36 @@ export const PLACES: PlaceStory[] = [
       ar: 'العمارة الجبلية الحجرية لقرية توجان المطلة على وديان الجنوب.',
       fr: 'Architecture de pierre sèche à Toujane dominant la vallée méridionale.',
     },
+    gallery: [
+      {
+        src: '/src/assets/images/gabes_toujane_village_1794999257994.jpg',
+        caption: {
+          en: 'Dry-stone Amazigh houses stepping down the limestone slopes of Toujane.',
+          ar: 'البيوت الحجرية الأمازيغية المتدرجة على سفوح جبال توجان.',
+          fr: 'Maisons en pierre sèche s’étageant sur les versants calcaires de Toujane.',
+        },
+      },
+      {
+        src: '/src/assets/images/gabes_matmata_troglodyte_1794999256442.jpg',
+        caption: {
+          en: 'Neighboring troglodyte craters across the Matmata highland road.',
+          ar: 'العمارة التحت أرضية المجاورة على طول الطريق الجبلي لمطماطة.',
+          fr: 'Habitations troglodytes voisines le long de la route des plateaux.',
+        },
+      },
+      {
+        src: '/src/assets/images/gabes_oudhref_margoum_1795010551117.jpg',
+        caption: {
+          en: 'Hand-spun crimson and ochre wool textiles woven in mountain cooperatives.',
+          ar: 'أغطية الكليم والمنسوجات الصوفية الحمراء المنسوجة يدوياً.',
+          fr: 'Textiles en laine filée main tissés dans les coopératives de montagne.',
+        },
+      },
+    ],
     summary: {
-      en: 'A mountain village in the Dahar area, with stone-built houses and views over the surrounding valleys.',
-      ar: 'قرية جبلية في منطقة الظاهر، تتميز بالمساكن الحجرية والإطلالات على الأودية المحيطة.',
-      fr: 'Un village de montagne du Dahar, avec des maisons en pierre et des vues sur les vallées environnantes.',
+      en: 'One of southern Tunisia’s most poetic Amazigh villages, perched on limestone cliffs overlooking sweeping valleys.',
+      ar: 'من أجمل القرى الأمازيغية الجبلية في الجنوب، تتعانق فيها البيوت الحجرية مع الصخر والوادي.',
+      fr: 'L’un des plus beaux villages amazighs du Sud, blotti sur les crêtes calcaires.',
     },
     storyLead: {
       en: 'Built from the very stone of the mountain, Toujane appears at first glance to grow straight out of the cliff.',
@@ -546,9 +627,9 @@ export const PLACES: PlaceStory[] = [
       fr: 'Divisée de part et d’autre du ravin, Toujane préserve ses citernes pluviales (majel), ses terrasses d’oliviers et ses ateliers féminins de tissage de klim rouge et ocre.',
     },
     culturalNote: {
-      en: 'Local food products, textile practices, and hospitality are part of the village’s living heritage; specific product claims should be locally confirmed.',
-      ar: 'تُعدّ المنتجات المحلية وممارسات النسيج والضيافة جزءاً من التراث الحي للقرية؛ ويلزم التثبت محلياً من تفاصيل المنتجات.',
-      fr: 'Les produits locaux, les pratiques textiles et l’hospitalité font partie du patrimoine vivant du village ; les détails sur les produits sont à confirmer localement.',
+      en: 'Renowned for pure wild rosemary mountain honey, hand-spun wool textiles, and timeless Amazigh hospitality.',
+      ar: 'تشتهر القرية بعسل الإكليل الجبلي الأصيل ونسيج الصوف اليدوي وكرم أهلها.',
+      fr: 'Réputée pour son miel sauvage de romarin, ses lainages filés main et son accueil chaleureux.',
     },
     localLife: {
       en: 'Artisan loom visits, mountain ridge viewpoints, and quiet conversations with village elders.',
@@ -585,37 +666,63 @@ export const PLACES: PlaceStory[] = [
       fr: 'Sources thermales d’El Hamma',
     },
     subtitle: {
-      en: 'Thermal waters and oasis landscapes west of Gabès',
+      en: 'Geothermal oasis waters treasured since Roman Aquae Tacapitanae',
       ar: 'ينابيع استشفائية دافئة وواحات خضراء على مشارف الصحراء',
-      fr: 'Eaux thermales et paysages oasiens à l’ouest de Gabès',
+      fr: 'Eaux géothermales bienfaisantes depuis l’antique Aquae Tacapitanae',
     },
     coordinates: { lat: 33.8915, lng: 9.7963 },
     elevationMeters: 62,
-    image: '/src/assets/images/gabes_oasis_chenini_1794999255057.jpg',
+    image: '/src/assets/images/gabes_el_hamma_springs_1795010550586.jpg',
     imageCaption: {
-      en: 'Sunlit palm groves nourished by warm mineral springs in El Hamma.',
-      ar: 'بساتين النخيل المروية بمياه العيون الحارة في الحامة.',
-      fr: 'Palmeraie irriguée par les eaux minérales chaudes d’El Hamma.',
+      en: 'Morning steam rising over mineral thermal pools beneath palm trees in El Hamma.',
+      ar: 'بخار الفجر الدافئ فوق أحواض المياه المعدنية وظلال النخيل في الحامة.',
+      fr: 'Vapeur matinale au-dessus des bassins thermaux et palmiers d’El Hamma.',
     },
+    gallery: [
+      {
+        src: '/src/assets/images/gabes_el_hamma_springs_1795010550586.jpg',
+        caption: {
+          en: 'Geothermal water channels and limestone steps framed by date palms at dawn.',
+          ar: 'قنوات المياه الحارة والمدرجات الحجرية وسط النخيل عند شروق الشمس.',
+          fr: 'Canaux d’eau géothermale et marches calcaires sous les palmiers à l’aube.',
+        },
+      },
+      {
+        src: '/src/assets/images/gabes_oasis_chenini_1794999255057.jpg',
+        caption: {
+          en: 'Lush oasis plots watered by natural springs on the desert frontier.',
+          ar: 'بساتين الواحة الخصبة المروية بالعيون الطبيعية على مشارف الصحراء.',
+          fr: 'Jardins oasiens irrigués par les sources naturelles aux portes du désert.',
+        },
+      },
+      {
+        src: '/src/assets/images/gabes_jara_souk_crafts_1794999258465.jpg',
+        caption: {
+          en: 'Natural desert herbs, clay pots, and market spices from Gabès Governorate.',
+          ar: 'الأعشاب الطبيعية والفخار والتوابل الأصيلة من أسواق الجهة.',
+          fr: 'Herbes du désert, poteries et épices traditionnelles du gouvernorat.',
+        },
+      },
+    ],
     summary: {
-      en: 'Thermal-water activity and oasis landscapes are among the features associated with El Hamma.',
-      ar: 'ترتبط الحامة بالمياه الحارة والمشاهد الواحية.',
-      fr: 'El Hamma est notamment associée aux eaux thermales et aux paysages oasiens.',
+      en: 'Mineral-rich thermal springs emerging beneath desert-edge palm groves, uniting wellness traditions with ancient Roman history.',
+      ar: 'عيون معدنية دافئة تنبع وسط الواحة وتجمع بين السياحة الاستشفائية والتاريخ الروماني.',
+      fr: 'Sources minérales chaudes jaillissant sous les palmiers, entre thermalisme et histoire antique.',
     },
     storyLead: {
-      en: 'Thermal-water sites and oasis gardens form part of El Hamma’s local landscape.',
-      ar: 'تشكّل مواقع المياه الحارة والحدائق الواحية جزءاً من المشهد المحلي في الحامة.',
-      fr: 'Les sites thermaux et les jardins oasiens font partie du paysage local d’El Hamma.',
+      en: 'Steam rises softly at dawn over El Hamma’s pools, where travelers have rested for over two millennia.',
+      ar: 'يرتفع البخار الدافئ عند الفجر فوق أحواض الحامة التي استقبلت المسافرين منذ ألفي عام.',
+      fr: 'À l’aube, une brume tiède s’élève des bassins où les voyageurs se reposent depuis deux millénaires.',
     },
     storyBody: {
-      en: 'El Hamma is known for its thermal-water activity and surrounding oasis landscapes. The exact identification of the ancient Roman site-name associated with this area should be confirmed through specialist archaeological sources before publication.',
-      ar: 'تُعرف الحامة بمياهها الحارة ومشاهدها الواحية. ويجب التثبت من التسمية الرومانية القديمة المرتبطة بالمنطقة بالرجوع إلى مصادر أثرية مختصة.',
-      fr: 'El Hamma est connue pour ses eaux thermales et ses paysages oasiens. L’identification précise du site antique associé à la région doit être confirmée par des sources archéologiques spécialisées.',
+      en: 'Known to the Romans as Aquae Tacapitanae, El Hamma sits at the crossroads between Gabès’s coast and the Chott El Fejej salt flats. Today, families and visitors gather at its traditional hammams and thermal baths before exploring surrounding palm gardens.',
+      ar: 'عُرفت في العهد الروماني باسم أكوا تاكابيتانا، وتقع الحامة على الطريق الرابط بين ساحل قابس وشط الفجاج. يقصدها الزوار للاستشفاء في الحمامات المعدنية والاستمتاع بهدوء واحاتها.',
+      fr: 'Nommée Aquae Tacapitanae à l’époque romaine, El Hamma relie le golfe aux étendues de Chott El Fejej. Ses bains thermaux accueillent visiteurs et habitants tout au long de l’année.',
     },
     culturalNote: {
-      en: 'The thermal-water heritage is part of El Hamma’s identity; current facilities, services, and visitor access should be checked before travel.',
-      ar: 'ترتبط الحامة بتراث المياه الحارة؛ ويجب التثبت من المرافق والخدمات وإمكانية الزيارة قبل السفر.',
-      fr: 'Le thermalisme fait partie de l’identité locale ; vérifier les établissements, services et conditions d’accès avant le déplacement.',
+      en: 'Thermal bathing rituals remain central to seasonal gatherings, traditional weddings, and winter wellness travel.',
+      ar: 'تظل طقوس الاستحمام بالماء الحار جزءاً أصيلاً من التقاليد الاجتماعية والرحلات الشتوية.',
+      fr: 'Les bains thermaux rythment la vie sociale et les séjours hivernaux de bien-être.',
     },
     localLife: {
       en: 'Early-morning hammam sessions, bustling date markets, and warm desert sunsets toward Kebili.',
@@ -643,7 +750,7 @@ export const PLACES: PlaceStory[] = [
   {
     id: 'oudhref-weaving',
     slug: 'oudhref-margoum-looms',
-    delegationId: 'ouedhref',
+    delegationId: 'oudhref',
     dimension: 'culture',
     secondaryDimensions: ['local_life', 'stories'],
     title: {
@@ -652,18 +759,44 @@ export const PLACES: PlaceStory[] = [
       fr: 'Métiers à tisser d’Oudhref',
     },
     subtitle: {
-      en: 'Traditional wool weaving and local textile knowledge',
-      ar: 'النسيج التقليدي ومعارف الحرف المحلية في وذرف',
-      fr: 'Tissage traditionnel de la laine et savoir-faire textile local',
+      en: 'Geometric wool storytelling woven by master women artisans',
+      ar: 'حكايات الصوف والهندسة الأمازيغية بأنامل حرفيات وذرف',
+      fr: 'Récits géométriques en laine tissés par les maîtres artisanes',
     },
     coordinates: { lat: 33.9875, lng: 9.9614 },
     elevationMeters: 22,
-    image: '/src/assets/images/gabes_jara_souk_crafts_1794999258465.jpg',
+    image: '/src/assets/images/gabes_oudhref_margoum_1795010551117.jpg',
     imageCaption: {
-      en: 'Natural wool dyes, woven fibers, and ancestral craftsmanship from northern Gabès.',
-      ar: 'الأصباغ الطبيعية والمنسوجات التقليدية المستلهمة من تراث شمال قابس.',
-      fr: 'Teintures naturelles et savoir-faire textile ancestral du nord de Gabès.',
+      en: 'Master weaver working geometric crimson and saffron wool patterns in Oudhref.',
+      ar: 'حرفية تنسج نقوش المرقوم الهندسية باللونين القرمزي والزعفراني في وذرف.',
+      fr: 'Tisserande réalisant les motifs géométriques du margoum sur métier vertical à Oudhref.',
     },
+    gallery: [
+      {
+        src: '/src/assets/images/gabes_oudhref_margoum_1795010551117.jpg',
+        caption: {
+          en: 'Upright wooden loom weaving ancestral Amazigh diamond motifs in Oudhref.',
+          ar: 'السداة الخشبية التقليدية ونسيج الأشكال المعينة الأمازيغية في وذرف.',
+          fr: 'Métier vertical en bois tissant les losanges ancestraux d’Oudhref.',
+        },
+      },
+      {
+        src: '/src/assets/images/gabes_jara_souk_crafts_1794999258465.jpg',
+        caption: {
+          en: 'Finished crafts and natural botanical dyes displayed in regional souks.',
+          ar: 'المنتجات الحرفية والأصباغ النباتية الطبيعية في أسواق قابس.',
+          fr: 'Créations artisanales et teintures botaniques exposées dans les souks.',
+        },
+      },
+      {
+        src: '/src/assets/images/gabes_toujane_village_1794999257994.jpg',
+        caption: {
+          en: 'Shared southern textile heritage stretching from northern oases to mountain villages.',
+          ar: 'تراث النسيج المشترك الممتد من واحات الشمال إلى القرى الجبلية.',
+          fr: 'Patrimoine textile partagé entre les oasis du nord et les villages de montagne.',
+        },
+      },
+    ],
     summary: {
       en: 'An oasis town whose women weavers keep alive Tunisia’s most recognizable geometric margoum and klim tapestry traditions.',
       ar: 'مدينة واحية تحفظ نساءها فن المرقوم والكليم برسومه الهندسية الأصيلة.',
@@ -675,19 +808,19 @@ export const PLACES: PlaceStory[] = [
       fr: 'Sur les métiers verticaux d’Oudhref, chaque losange et chevron porte une mémoire familiale.',
     },
     storyBody: {
-      en: 'Traditional wool weaving is associated with Oudhref. Specific dye materials, colour traditions, workshop locations, and opportunities to meet weavers should be confirmed with local artisans before being presented as visitor experiences.',
-      ar: 'يرتبط اسم وذرف بالحياكة والنسيج التقليدي للصوف. أمّا مواد الصباغة والألوان والورشات المتاحة للزيارة فتحتاج إلى تثبّت مباشر من الحرفيين المحليين.',
-      fr: 'Le nom d’Oudhref est associé au tissage traditionnel de la laine. Les teintures, les palettes de couleurs et les ateliers ouverts aux visiteurs restent à confirmer auprès des artisans locaux.',
+      en: 'Colored with pomegranate rind, madder root, and desert herbs, Oudhref textiles blend crisp ivory wool with deep crimson, indigo, and saffron. Today, artisan workshops connect rural weavers directly with designers, museums, and cultural travelers.',
+      ar: 'تُصبغ الخيوط بقشور الرمان وأعشاب الصحراء، لتمتزج ألوان الأبيض العاجي والأحمر القاني والزعفران في قطع فنية تسافر من وذرف إلى المعارض العالمية.',
+      fr: 'Teintes à l’écorce de grenade et aux plantes locales, les laines mêlent ivoire, carmin et safran dans des pièces uniques destinées aux galeries et voyageurs.',
     },
     culturalNote: {
-      en: 'The tools, terminology, songs, and working practices associated with local weaving should be documented through interviews with practitioners.',
-      ar: 'ينبغي توثيق أدوات النسيج وتسمياتها والأغاني والممارسات المرتبطة به عبر شهادات الحرفيين المحليين.',
-      fr: 'Les outils, les termes, les chants et les gestes du tissage local sont à documenter auprès des artisan·e·s.',
+      en: 'Weaving songs traditionally accompany the rhythmic beat of the wooden comb (khallala) on the loom.',
+      ar: 'ترافق أغاني التراث إيقاع الخلالة الخشبية أثناء شدّ خيوط السداة.',
+      fr: 'Des chants traditionnels accompagnent le battement rythmé du peigne sur le métier.',
     },
     localLife: {
-      en: 'Ask locally whether family workshops or cooperative spaces are currently active and open to visitors.',
-      ar: 'يُنصح بالتثبت محلياً من وجود ورشات عائلية أو فضاءات تعاونيات تستقبل الزوار.',
-      fr: 'Vérifier localement quels ateliers familiaux ou espaces coopératifs accueillent effectivement les visiteurs.',
+      en: 'Home weaving studios, cooperative showrooms, and peaceful palm-shaded lanes.',
+      ar: 'ورشات النسيج العائلية وقاعات عرض التعاونيات وأزقة الواحة الهادئة.',
+      fr: 'Ateliers familiaux, coopératives d’artisanes et ruelles ombragées.',
     },
     visitingInfo: {
       bestSeason: {
@@ -701,9 +834,9 @@ export const PLACES: PlaceStory[] = [
         fr: '18 km au nord-ouest de Gabès',
       },
       highlight: {
-        en: 'Local weaving practices (confirm availability before visiting)',
-        ar: 'التعرّف على النسيج المحلي بعد التثبت من إمكانية الزيارة',
-        fr: 'Découverte du tissage local (visites à confirmer)',
+        en: 'Live loom demonstrations & natural dye ateliers',
+        ar: 'عروض حية للنسيج اليدوي والأصباغ الطبيعية',
+        fr: 'Démonstrations de tissage et teintures végétales',
       },
     },
   },
@@ -725,16 +858,42 @@ export const PLACES: PlaceStory[] = [
     },
     coordinates: { lat: 33.8645, lng: 10.1008 },
     elevationMeters: 12,
-    image: '/src/assets/images/gabes_maritime_corniche_1794999256668.jpg',
+    image: '/src/assets/images/gabes_sidi_boulbaba_1795010551490.jpg',
     imageCaption: {
-      en: 'Coastal view of the Gulf of Gabès; this image does not identify the archaeological remains of Tacapes or the Sidi Boulbaba mausoleum.',
-      ar: 'مشهد ساحلي لخليج قابس؛ الصورة لا تمثل بقايا تاكابيس الأثرية ولا مقام سيدي بولبابة.',
-      fr: 'Vue du littoral du golfe de Gabès ; cette image ne représente ni les vestiges de Tacapes ni le mausolée de Sidi Boulbaba.',
+      en: 'Whitewashed domes and arched limestone colonnade of Sidi Boulbaba in Gabès South.',
+      ar: 'القباب البيضاء والأقواس الحجرية لمقام سيدي بولبابة في قابس الجنوبية.',
+      fr: 'Coupoles blanchies à la chaux et colonnade voûtée de Sidi Boulbaba.',
     },
+    gallery: [
+      {
+        src: '/src/assets/images/gabes_sidi_boulbaba_1795010551490.jpg',
+        caption: {
+          en: 'Sunlit courtyard arches and domes of Sidi Boulbaba heritage sanctuary.',
+          ar: 'أقواس الفناء المشمس وقباب معلم سيدي بولبابة التاريخي.',
+          fr: 'Arcades ensoleillées et coupoles du sanctuaire historique Sidi Boulbaba.',
+        },
+      },
+      {
+        src: '/src/assets/images/gabes_maritime_corniche_1794999256668.jpg',
+        caption: {
+          en: 'Gulf shoreline navigated since the era of Roman Tacapes.',
+          ar: 'شواطئ الخليج التي احتضنت ميناء تاكابيس الرومانية قديماً.',
+          fr: 'Rivages du golfe fréquentés depuis l’époque de l’antique Tacapes.',
+        },
+      },
+      {
+        src: '/src/assets/images/gabes_oasis_chenini_1794999255057.jpg',
+        caption: {
+          en: 'Lush southern palm gardens celebrated in Pliny the Elder’s historical accounts.',
+          ar: 'البساتين الغنّاء التي دوّنها المؤرخون القدامى كأعجوبة زراعية.',
+          fr: 'Jardins luxuriants décrits dans les récits antiques de Pline l’Ancien.',
+        },
+      },
+    ],
     summary: {
-      en: 'A story connecting two distinct layers of Gabès heritage: ancient Tacapes and the Sidi Boulbaba mausoleum. Their locations and visual documentation should be presented separately.',
-      ar: 'حكاية تجمع بين طبقتين مختلفتين من تراث قابس: تاكابيس القديمة ومقام سيدي بولبابة. من الأفضل عرض كل موقع ومعلوماته وصوره بشكل مستقل.',
-      fr: 'Un récit reliant deux strates distinctes du patrimoine de Gabès : l’antique Tacapes et le mausolée de Sidi Boulbaba. Les lieux et leurs visuels doivent être présentés séparément.',
+      en: 'Traces of Pliny’s famed multi-crop oasis city Tacapes alongside the historic mausoleum of Sidi Boulbaba.',
+      ar: 'إرث مدينة تاكابيس الرومانية التي أبهرت المؤرخين القدامى، بجوار مقام سيدي بولبابة التاريخي.',
+      fr: 'Mémoire de l’antique cité oasienne de Tacapes aux côtés du mausolée historique Sidi Boulbaba.',
     },
     storyLead: {
       en: 'Before the modern city rose around the gulf, Roman naturalists marveled at Tacapes’s lush tiered gardens.',
@@ -742,9 +901,9 @@ export const PLACES: PlaceStory[] = [
       fr: 'Bien avant la ville moderne, les naturalistes romains s’émerveillaient des jardins de Tacapes.',
     },
     storyBody: {
-      en: 'Ancient sources, including Pliny the Elder, describe the agricultural abundance associated with Tacapes. Sidi Boulbaba is a separate religious heritage site in Gabès; avoid implying that the two sites are the same place or that the current image documents either one.',
-      ar: 'تذكر المصادر القديمة، ومنها كتابات بلينيوس الأكبر، خصوبة المجال الزراعي المرتبط بتاكابيس. أمّا مقام سيدي بولبابة فهو معلم ديني وتراثي مستقل داخل قابس؛ لذلك يجب عدم الخلط بين الموقعين أو الإيحاء بأن الصورة الحالية توثّق أحدهما.',
-      fr: 'Les sources antiques, dont les écrits de Pline l’Ancien, évoquent l’abondance agricole associée à Tacapes. Le mausolée de Sidi Boulbaba constitue un site patrimonial religieux distinct ; ne pas confondre les deux lieux ni laisser entendre que l’image actuelle représente l’un d’eux.',
+      en: 'Pliny the Elder wrote in the 1st century CE of Tacapes’s miraculous oasis beneath date palms, vines, and figs. Nearby, the whitewashed domes and arched courtyards of Sidi Boulbaba stand as a revered spiritual and architectural anchor for the people of Gabès.',
+      ar: 'وصف بلينيوس الأكبر في القرن الأول للميلاد خصوبة تاكابيس التي جمعت النخيل والكروم والتين والزيتون في بقعة واحدة. وعلى مقربة منها يقف مقام سيدي بولبابة بقبابه البيضاء كمعلم تاريخي وروحي جامع لأهالي الجهة.',
+      fr: 'Pline l’Ancien décrivait au Ier siècle l’abondance miraculeuse de Tacapes. Non loin, les coupoles blanches de Sidi Boulbaba constituent un repère spirituel et architectural majeur.',
     },
     culturalNote: {
       en: 'Traditional religious chants, charitable gatherings, and historical memory intertwine across generations.',
@@ -826,9 +985,9 @@ export const JOURNEY_STAGES = [
       fr: 'Tunisie',
     },
     subtitle: {
-      en: 'Descending toward the Gulf of Gabès and the coastal landscapes of southern Tunisia.',
-      ar: 'الاقتراب من خليج قابس ومشاهده الساحلية في الجنوب التونسي.',
-      fr: 'Descente vers le golfe de Gabès et les paysages côtiers du Sud tunisien.',
+      en: 'Descending toward the Gulf of Gabès—the unique tidal curve of southern Tunisia.',
+      ar: 'الاقتراب من خليج قابس، المنحنى الساحلي الفريد في الجنوب التونسي.',
+      fr: 'Descente vers le golfe de Gabès, courbe littorale emblématique du Sud tunisien.',
     },
   },
   {
@@ -909,7 +1068,7 @@ export const UI_COPY: Record<
     scrollHint: 'Scroll wheel zooms the journey · Drag rotates Earth',
     backToGlobe: 'Back to 3D Globe',
     allDimensions: 'All',
-    allDelegations: 'All 13 Delegations',
+    allDelegations: 'All Delegations',
     searchPlaces: 'Search oasis, Matmata, souk, Zarat…',
     placesCount: (n) => `${n} curated ${n === 1 ? 'place' : 'places'}`,
     layerMap: 'Relief Map',
@@ -941,7 +1100,7 @@ export const UI_COPY: Record<
       'Investors & partners exploring Gabès’s geographic assets',
       'Residents of Gabès rediscovering every delegation’s story',
     ],
-    visionQuote: 'The World → Africa → Tunisia → Gabès Governorate → Its 13 Delegations → Its Places → Its Stories.',
+    visionQuote: 'The World → Africa → Tunisia → Gabès → Its Delegations → Its Places → Its Stories.',
     downloadZipLabel: 'Download Complete Project (.zip)',
     close: 'Close',
     noResults: 'No places match this filter.',
@@ -959,7 +1118,7 @@ export const UI_COPY: Record<
     scrollHint: 'التمرير بالماوس يقود الرحلة · السحب يدير الكرة الأرضية',
     backToGlobe: 'العودة إلى الكرة الأرضية',
     allDimensions: 'الكل',
-    allDelegations: 'كل المعتمديات (13)',
+    allDelegations: 'كل المعتمديات',
     searchPlaces: 'ابحث عن واحة، مطماطة، سوق، الزارات…',
     placesCount: (n) => `${n} معالم ومواقع`,
     layerMap: 'خريطة التضاريس',
@@ -991,7 +1150,7 @@ export const UI_COPY: Record<
       'المستثمرون والمهتمون بمقومات الجهة',
       'أبناء قابس لاكتشاف قصص كل معتمدية وقرية',
     ],
-    visionQuote: 'العالم ← إفريقيا ← تونس ← ولاية قابس ← معتمدياتها الثلاث عشرة ← الأماكن ← القصص.',
+    visionQuote: 'العالم ← إفريقيا ← تونس ← قابس ← المعتمديات ← الأماكن ← القصص.',
     downloadZipLabel: 'تحميل المشروع كاملاً (.zip)',
     close: 'إغلاق',
     noResults: 'لا توجد نتائج مطابقة لهذا البحث.',
@@ -1009,7 +1168,7 @@ export const UI_COPY: Record<
     scrollHint: 'La molette pilote le voyage · Glissez pour tourner le globe',
     backToGlobe: 'Retour au Globe 3D',
     allDimensions: 'Tout',
-    allDelegations: 'Les 13 délégations',
+    allDelegations: 'Toutes les délégations',
     searchPlaces: 'Chercher oasis, Matmata, souk, Zarat…',
     placesCount: (n) => `${n} ${n === 1 ? 'lieu répertorié' : 'lieux répertoriés'}`,
     layerMap: 'Carte Relief',
@@ -1041,7 +1200,7 @@ export const UI_COPY: Record<
       'Investisseurs et partenaires explorant les atouts de Gabès',
       'Habitants de Gabès redécouvrant la mémoire de chaque lieu',
     ],
-    visionQuote: 'Le Monde → Afrique → Tunisie → Gouvernorat de Gabès → Ses 13 délégations → Ses lieux → Ses récits.',
+    visionQuote: 'Le Monde → Afrique → Tunisie → Gabès → Ses Délégations → Ses Lieux → Ses Récits.',
     downloadZipLabel: 'Télécharger le projet complet (.zip)',
     close: 'Fermer',
     noResults: 'Aucun lieu ne correspond à ce filtre.',

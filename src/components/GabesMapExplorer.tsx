@@ -1,13 +1,18 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
+import { AnimatePresence, motion } from 'motion/react';
 import {
   ArrowLeft,
   ArrowRight,
+  ChevronLeft,
+  ChevronRight,
   Compass,
   Globe2,
   Layers,
   MapPin,
   Mountain,
+  Pause,
+  Play,
   RotateCcw,
   Search,
 } from 'lucide-react';
@@ -19,7 +24,7 @@ import {
   UI_COPY,
 } from '../data/gabesData';
 import { GABES_CULTURAL_ROUTE } from '../data/worldGeo';
-import type { DimensionKey, Language, PlaceStory } from '../types/gabes';
+import type { DimensionKey, GalleryPhoto, Language, PlaceStory } from '../types/gabes';
 
 interface GabesMapExplorerProps {
   lang: Language;
@@ -172,44 +177,314 @@ function applyTerrainAndRouteOverlay(map: maplibregl.Map, enableTerrain: boolean
   }
 }
 
-function StoryImage({
-  src,
-  alt,
+const gallerySlideVariants = {
+  enter: (dir: number) => ({
+    x: dir >= 0 ? 44 : -44,
+    opacity: 0,
+    scale: 1.03,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+    scale: 1,
+  },
+  exit: (dir: number) => ({
+    x: dir >= 0 ? -44 : 44,
+    opacity: 0,
+    scale: 0.98,
+  }),
+};
+
+function StoryGallery({
+  photos,
   title,
-  aspectClass = 'aspect-[16/10]',
+  lang,
+  placeId,
 }: {
-  src: string;
-  alt: string;
+  photos: GalleryPhoto[];
   title: string;
-  aspectClass?: string;
+  lang: Language;
+  placeId: string;
 }) {
-  const [failed, setFailed] = useState(false);
+  const safePhotos = photos.length > 0 ? photos : [];
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [direction, setDirection] = useState<1 | -1>(1);
+  const [isHovered, setIsHovered] = useState(false);
+  const [failedSrcs, setFailedSrcs] = useState<Record<string, boolean>>({});
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  });
 
   useEffect(() => {
-    setFailed(false);
-  }, [src]);
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches);
+      if (e.matches) setIsAutoPlaying(false);
+    };
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
 
-  if (failed) {
-    return (
-      <div
-        className={`flex ${aspectClass} w-full flex-col items-center justify-center rounded-lg border border-stone-200 bg-gradient-to-br from-stone-200 via-stone-100 to-amber-50 p-6 text-center`}
-      >
-        <Compass className="mb-2 h-7 w-7 text-[#1f7d72]" />
-        <p className="font-display text-lg font-semibold text-stone-800">{title}</p>
-      </div>
-    );
-  }
+  useEffect(() => {
+    setActiveIndex(0);
+    setDirection(1);
+    setFailedSrcs({});
+  }, [placeId]);
+
+  const total = safePhotos.length;
+
+  const goTo = useCallback(
+    (nextIndex: number, dir?: 1 | -1) => {
+      if (total <= 1) return;
+      const wrapped = ((nextIndex % total) + total) % total;
+      if (wrapped === activeIndex) return;
+      const computedDir: 1 | -1 = dir ?? (wrapped > activeIndex ? 1 : -1);
+      setDirection(computedDir);
+      setActiveIndex(wrapped);
+    },
+    [activeIndex, total]
+  );
+
+  const handleNext = useCallback(() => {
+    goTo(activeIndex + 1, 1);
+  }, [activeIndex, goTo]);
+
+  const handlePrev = useCallback(() => {
+    goTo(activeIndex - 1, -1);
+  }, [activeIndex, goTo]);
+
+  useEffect(() => {
+    if (!isAutoPlaying || isHovered || total <= 1) return;
+    const timer = window.setInterval(() => {
+      setDirection(1);
+      setActiveIndex((prev) => (prev + 1) % total);
+    }, 4500);
+    return () => window.clearInterval(timer);
+  }, [isAutoPlaying, isHovered, total]);
+
+  if (total === 0) return null;
+
+  const currentPhoto = safePhotos[activeIndex] ?? safePhotos[0];
+  const currentFailed = Boolean(failedSrcs[currentPhoto.src]);
+  const prevLabel =
+    lang === 'ar' ? 'الصورة السابقة' : lang === 'fr' ? 'Photo précédente' : 'Previous photo';
+  const nextLabel =
+    lang === 'ar' ? 'الصورة التالية' : lang === 'fr' ? 'Photo suivante' : 'Next photo';
+  const toggleLabel = isAutoPlaying
+    ? lang === 'ar'
+      ? 'إيقاف العرض التلقائي'
+      : lang === 'fr'
+        ? 'Mettre en pause'
+        : 'Pause slideshow'
+    : lang === 'ar'
+      ? 'تشغيل العرض التلقائي'
+      : lang === 'fr'
+        ? 'Lecture automatique'
+        : 'Play slideshow';
 
   return (
-    <div className={`relative ${aspectClass} w-full overflow-hidden rounded-lg bg-stone-200`}>
-      <img
-        src={src}
-        alt={alt}
-        referrerPolicy="no-referrer"
-        onError={() => setFailed(true)}
-        className="h-full w-full object-cover transition-transform duration-300"
-      />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+    <div
+      className="select-none"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onKeyDown={(e) => {
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          handleNext();
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          handlePrev();
+        }
+      }}
+      tabIndex={0}
+      aria-roledescription="carousel"
+      aria-label={title}
+    >
+      <div className="relative aspect-[16/10] w-full overflow-hidden rounded-xl bg-stone-900 shadow-sm">
+        <AnimatePresence mode="wait" custom={direction} initial={false}>
+          {currentFailed ? (
+            <motion.div
+              key={`fallback-${activeIndex}`}
+              custom={direction}
+              variants={gallerySlideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: prefersReducedMotion ? 0.01 : 0.35 }}
+              className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-stone-200 via-stone-100 to-amber-50 p-6 text-center"
+            >
+              <Compass className="mb-2 h-7 w-7 text-[#1f7d72]" />
+              <p className="font-display text-lg font-semibold text-stone-800">{title}</p>
+            </motion.div>
+          ) : (
+            <motion.img
+              key={`${placeId}-${activeIndex}-${currentPhoto.src}`}
+              src={currentPhoto.src}
+              alt={`${title} — ${currentPhoto.caption[lang]}`}
+              referrerPolicy="no-referrer"
+              custom={direction}
+              variants={gallerySlideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{
+                duration: prefersReducedMotion ? 0.01 : 0.45,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              onError={() =>
+                setFailedSrcs((prev) => ({ ...prev, [currentPhoto.src]: true }))
+              }
+              className="h-full w-full object-cover"
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Subtle Top & Bottom Scrim for WCAG AA Overlay Controls */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/55" />
+
+        {/* Top Bar: Counter & Auto-Play Toggle */}
+        {total > 1 && (
+          <div className="absolute inset-x-3 top-3 z-10 flex items-center justify-between gap-2">
+            <span className="font-mono-tabular rounded-md border border-white/20 bg-black/55 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur-sm">
+              {activeIndex + 1} / {total}
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsAutoPlaying((prev) => !prev)}
+              aria-label={toggleLabel}
+              title={toggleLabel}
+              className="inline-flex items-center gap-1 rounded-md border border-white/20 bg-black/55 px-2 py-1 text-[11px] font-medium text-white backdrop-blur-sm transition-colors hover:bg-black/80 whitespace-nowrap"
+            >
+              {isAutoPlaying ? (
+                <Pause className="h-3 w-3" />
+              ) : (
+                <Play className="h-3 w-3" />
+              )}
+              <span>
+                {isAutoPlaying
+                  ? lang === 'ar'
+                    ? 'إيقاف'
+                    : lang === 'fr'
+                      ? 'Pause'
+                      : 'Pause'
+                  : lang === 'ar'
+                    ? 'تلقائي'
+                    : lang === 'fr'
+                      ? 'Auto'
+                      : 'Auto'}
+              </span>
+            </button>
+          </div>
+        )}
+
+        {/* Prev / Next Navigation Buttons */}
+        {total > 1 && (
+          <div
+            dir="ltr"
+            className="pointer-events-none absolute inset-x-2.5 top-1/2 z-10 flex -translate-y-1/2 items-center justify-between"
+          >
+            <button
+              type="button"
+              onClick={handlePrev}
+              aria-label={prevLabel}
+              className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-black/55 text-white backdrop-blur-sm transition-transform duration-150 hover:scale-105 hover:bg-black/80"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={handleNext}
+              aria-label={nextLabel}
+              className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-black/55 text-white backdrop-blur-sm transition-transform duration-150 hover:scale-105 hover:bg-black/80"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
+        {/* Bottom Progress Segment Indicators */}
+        {total > 1 && (
+          <div className="absolute inset-x-3 bottom-3 z-10 flex items-center gap-1.5">
+            {safePhotos.map((photo, idx) => {
+              const isActive = idx === activeIndex;
+              return (
+                <button
+                  key={`${photo.src}-${idx}`}
+                  type="button"
+                  onClick={() => goTo(idx)}
+                  aria-label={`${title} ${idx + 1}`}
+                  className="group relative h-1.5 flex-1 overflow-hidden rounded-full bg-white/35 transition-colors hover:bg-white/60"
+                >
+                  {isActive && (
+                    <motion.span
+                      layoutId={`gallery-bar-${placeId}`}
+                      transition={{ duration: prefersReducedMotion ? 0.01 : 0.25 }}
+                      className="absolute inset-0 rounded-full bg-white"
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Animated Caption */}
+      <div className="mt-2.5 min-h-[2.25rem]">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.p
+            key={`${placeId}-caption-${activeIndex}`}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: prefersReducedMotion ? 0.01 : 0.22 }}
+            className="font-serif text-xs italic leading-relaxed text-stone-600"
+          >
+            {currentPhoto.caption[lang]}
+          </motion.p>
+        </AnimatePresence>
+      </div>
+
+      {/* Interactive Thumbnail Strip */}
+      {total > 1 && (
+        <div className="mt-2 grid grid-cols-3 gap-2">
+          {safePhotos.map((photo, idx) => {
+            const isActive = idx === activeIndex;
+            const thumbFailed = Boolean(failedSrcs[photo.src]);
+            return (
+              <button
+                key={`thumb-${photo.src}-${idx}`}
+                type="button"
+                onClick={() => goTo(idx)}
+                className={`group relative aspect-[16/10] overflow-hidden rounded-lg border transition-all duration-200 ${
+                  isActive
+                    ? 'border-[#1f7d72] ring-2 ring-[#1f7d72]/35'
+                    : 'border-stone-200 opacity-70 hover:opacity-100'
+                }`}
+              >
+                {thumbFailed ? (
+                  <div className="flex h-full w-full items-center justify-center bg-stone-200">
+                    <Compass className="h-4 w-4 text-stone-500" />
+                  </div>
+                ) : (
+                  <img
+                    src={photo.src}
+                    alt={photo.caption[lang]}
+                    referrerPolicy="no-referrer"
+                    onError={() =>
+                      setFailedSrcs((prev) => ({ ...prev, [photo.src]: true }))
+                    }
+                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -748,14 +1023,16 @@ export function GabesMapExplorer({
             </div>
 
             <div className="gabes-scroll flex-1 overflow-y-auto overscroll-contain p-5">
-              <StoryImage
-                src={activePlace.image}
-                alt={activePlace.title[lang]}
+              <StoryGallery
+                photos={
+                  activePlace.gallery?.length
+                    ? activePlace.gallery
+                    : [{ src: activePlace.image, caption: activePlace.imageCaption }]
+                }
                 title={activePlace.title[lang]}
+                lang={lang}
+                placeId={activePlace.id}
               />
-              <p className="mt-2 font-serif text-xs italic text-stone-500">
-                {activePlace.imageCaption[lang]}
-              </p>
 
               <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-stone-500">
                 <span

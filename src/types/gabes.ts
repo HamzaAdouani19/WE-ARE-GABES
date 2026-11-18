@@ -28,6 +28,11 @@ export interface Delegation {
   summary: LocalizedText;
 }
 
+export interface GalleryPhoto {
+  src: string;
+  caption: LocalizedText;
+}
+
 export interface PlaceStory {
   id: string;
   slug: string;
@@ -40,6 +45,7 @@ export interface PlaceStory {
   elevationMeters: number;
   image: string;
   imageCaption: LocalizedText;
+  gallery: GalleryPhoto[];
   summary: LocalizedText;
   storyLead: LocalizedText;
   storyBody: LocalizedText;
