@@ -26,6 +26,7 @@ import {
 } from '../data/gabesData';
 import { GABES_CULTURAL_ROUTE } from '../data/worldGeo';
 import type { DimensionKey, GalleryPhoto, Language, PlaceStory } from '../types/gabes';
+import tunisia from '../data/tunisia.geo.json';
 
 interface GabesMapExplorerProps {
   lang: Language;
@@ -138,6 +139,27 @@ function applyTerrainAndRouteOverlay(map: maplibregl.Map, enableTerrain: boolean
     map.setTerrain({ source: 'terrain-dem', exaggeration: 1.55 });
   } else {
     map.setTerrain(null);
+  }
+
+  if (!map.getSource('tunisia')) {
+    map.addSource('tunisia', {
+      type: 'geojson',
+      data: tunisia,
+    });
+  }
+
+  if (!map.getLayer('tunisia-outline')) {
+    map.addLayer({
+      id: 'tunisia-outline',
+      type: 'line',
+      source: 'tunisia',
+      paint: {
+        'line-color': '#5eead4',
+        'line-width': 1.5,
+        'line-opacity': 0.9,
+      },
+      layout: { 'line-join': 'round', 'line-cap': 'round' },
+    });
   }
 
   // 2. Add Cultural Corridor Route Line

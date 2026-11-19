@@ -1,11 +1,11 @@
-import { useEffect } from 'react';
-import { X } from 'lucide-react';
-import { CULTURAL_DIMENSIONS, UI_COPY } from '../data/gabesData';
-import type { DimensionKey, Language } from '../types/gabes';
+import { useEffect } from "react";
+import { X } from "lucide-react";
+import { CULTURAL_DIMENSIONS, UI_COPY } from "../data/gabesData";
+import type { DimensionKey, Language } from "../types/gabes";
 
 interface AboutModalProps {
   open: boolean;
-  mode: 'about' | 'dimensions';
+  mode: "about" | "dimensions";
   lang: Language;
   onClose: () => void;
   onSelectDimension: (dim: DimensionKey) => void;
@@ -21,10 +21,10 @@ export function AboutModal({
   useEffect(() => {
     if (!open) return;
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
+      if (event.key === "Escape") onClose();
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [open, onClose]);
 
   if (!open) return null;
@@ -48,7 +48,7 @@ export function AboutModal({
               {copy.brand}
             </p>
             <h2 className="font-display mt-1 text-3xl font-semibold text-stone-900">
-              {mode === 'dimensions' ? copy.navDimensions : copy.aboutTitle}
+              {mode === "dimensions" ? copy.navDimensions : copy.aboutTitle}
             </h2>
           </div>
           <button
@@ -61,7 +61,7 @@ export function AboutModal({
           </button>
         </div>
 
-        {mode === 'dimensions' ? (
+        {mode === "dimensions" ? (
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             {CULTURAL_DIMENSIONS.map((dim, idx) => (
               <button
@@ -74,7 +74,10 @@ export function AboutModal({
                 className="flex flex-col items-start rounded-xl border border-stone-200 bg-white p-4 text-start transition-colors hover:border-[#1f7d72]"
               >
                 <div className="flex items-center gap-2 text-xs text-stone-500">
-                  <span className="font-mono-tabular font-semibold" style={{ color: dim.accentHex }}>
+                  <span
+                    className="font-mono-tabular font-semibold"
+                    style={{ color: dim.accentHex }}
+                  >
                     0{idx + 1}
                   </span>
                   <span aria-hidden="true">·</span>
@@ -91,10 +94,14 @@ export function AboutModal({
           </div>
         ) : (
           <div className="mt-6 space-y-6">
-            <p className="text-[15px] leading-relaxed text-stone-700">{copy.aboutMission}</p>
+            <p className="text-[15px] leading-relaxed text-stone-700">
+              {copy.aboutMission}
+            </p>
 
             <div className="border-y border-stone-200 py-4 text-center">
-              <p className="font-display text-xl italic text-stone-800">{copy.visionQuote}</p>
+              <p className="font-display text-xl italic text-stone-800">
+                {copy.visionQuote}
+              </p>
             </div>
 
             <div>
@@ -111,24 +118,17 @@ export function AboutModal({
               </ul>
             </div>
 
-            {/* <div className="flex flex-wrap items-center justify-between gap-4 border-t border-stone-200 pt-5">
-              <a
-                href="/we-are-gabes-project.zip"
-                download="we-are-gabes-project.zip"
-                className="inline-flex items-center gap-2 rounded-lg bg-[#1f7d72] px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-[#18685e]"
-              >
-                <Download className="h-4 w-4" />
-                <span>{copy.downloadZipLabel}</span>
-              </a>
-
-              <button
-                type="button"
-                onClick={onClose}
-                className="rounded-lg border border-stone-300 px-4 py-2 text-xs font-semibold text-stone-700 hover:bg-stone-100"
-              >
-                {copy.close}
-              </button>
-            </div> */}
+            <div className="mt-6 border-t border-white/10 pt-4 text-xs text-white/60">
+              <p>Conception, design et développement : Hamza (Tunisie).</p>
+              <p>
+                © {new Date().getFullYear()} Hamza. Reproduction interdite sans
+                autorisation écrite.
+              </p>
+              <p>
+                Cartes : © OpenStreetMap contributors / MapLibre. Photos :
+                sources et licences à compléter.
+              </p>
+            </div>
           </div>
         )}
       </div>

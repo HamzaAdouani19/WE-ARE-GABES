@@ -1,0 +1,7 @@
+/* TEAM */
+Creator: Hamza Adouani
+Site: https://portfolio-hamza-pied.vercel.app
+Location: Tunisia - Djerba
+
+/* SITE */
+Built with: React, Vite, TypeScript, MapLibre

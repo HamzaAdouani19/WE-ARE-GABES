@@ -339,7 +339,7 @@ export function GlobeJourney({ lang, onEnterGabes }: GlobeJourneyProps) {
       <div className="pointer-events-none absolute inset-x-0 top-6 z-10 mx-auto flex max-w-6xl items-start justify-between px-6">
         <div className="pointer-events-auto">
           <img
-            src="/logo.blanc.svg.svg"
+            src="/logo.blanc.svg"
             alt="WE ARE GABÈS"
             className="h-16 w-auto sm:h-24 drop-shadow-[0_6px_18px_rgba(0,0,0,0.65)]"
           />

@@ -4,6 +4,7 @@ import { GabesMapExplorer } from './components/GabesMapExplorer';
 import { AboutModal } from './components/AboutModal';
 import { UI_COPY } from './data/gabesData';
 import type { AppView, DimensionKey, Language } from './types/gabes';
+import Footer from "./components/Footer";
 
 const LANG_OPTIONS: Array<{ code: Language; label: string }> = [
   { code: 'en', label: 'EN' },
@@ -54,7 +55,7 @@ export default function App() {
           className="shrink-0 cursor-pointer transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-[#5eead4]"
         >
           <img
-            src="/logo.blanc.svg.svg"
+            src="/logo.blanc.svg"
             alt={copy.brand}
             className="h-15 w-auto sm:h-15"
           />
@@ -145,6 +146,7 @@ export default function App() {
         onClose={() => setModalMode(null)}
         onSelectDimension={handleOpenDimension}
       />
+      <Footer />
     </div>
   );
 }
