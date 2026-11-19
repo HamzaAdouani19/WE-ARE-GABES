@@ -1,9 +1,15 @@
 import { Suspense, lazy, useCallback, useEffect, useState } from 'react';
-import { GlobeJourney } from './components/GlobeJourney';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { AboutModal } from './components/AboutModal';
 import Footer from './components/Footer';
 import { UI_COPY } from './data/gabesData';
 import type { AppView, DimensionKey, Language } from './types/gabes';
+
+const GlobeJourney = lazy(() =>
+  import('./components/GlobeJourney').then((m) => ({
+    default: m.GlobeJourney,
+  }))
+);
 
 const GabesMapExplorer = lazy(() =>
   import('./components/GabesMapExplorer').then((m) => ({
@@ -17,8 +23,27 @@ const LANG_OPTIONS: Array<{ code: Language; label: string }> = [
   { code: 'fr', label: 'FR' },
 ];
 
+const LANG_STORAGE_KEY = 'we-are-gabes:lang';
+
+function isLanguage(value: unknown): value is Language {
+  return value === 'en' || value === 'ar' || value === 'fr';
+}
+
+function detectInitialLanguage(): Language {
+  try {
+    const saved = window.localStorage.getItem(LANG_STORAGE_KEY);
+    if (isLanguage(saved)) return saved;
+  } catch {
+    // storage unavailable (private mode, blocked cookies)
+  }
+  const preferred = (navigator.languages?.[0] ?? navigator.language ?? 'fr')
+    .slice(0, 2)
+    .toLowerCase();
+  return isLanguage(preferred) ? preferred : 'fr';
+}
+
 export default function App() {
-  const [lang, setLang] = useState<Language>('en');
+  const [lang, setLang] = useState<Language>(detectInitialLanguage);
   const [hash, setHash] = useState(() => window.location.hash);
   const [initialDimension, setInitialDimension] = useState<DimensionKey>('all');
   const [modalMode, setModalMode] = useState<'about' | 'dimensions' | null>(null);
@@ -41,6 +66,11 @@ export default function App() {
   useEffect(() => {
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    try {
+      window.localStorage.setItem(LANG_STORAGE_KEY, lang);
+    } catch {
+      // ignore
+    }
   }, [lang]);
 
   const handleOpenDimension = (dim: DimensionKey) => {
@@ -60,8 +90,10 @@ export default function App() {
           className="shrink-0 cursor-pointer transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-[#5eead4]"
         >
           <img
-            src="/logo.blanc.svg"
-            alt={copy.brand}
+            src="/logo-blanc.svg"
+            alt=""
+            width={677}
+            height={495}
             className="h-9 w-auto sm:h-11"
           />
         </button>
@@ -108,7 +140,7 @@ export default function App() {
         {/* Zone 3: Segmented Language Switcher */}
         <div
           role="group"
-          aria-label="Language"
+          aria-label={copy.languageLabel}
           className="flex shrink-0 items-center rounded-lg border border-white/15 bg-[#0d172a] p-0.5 text-[11px] font-semibold"
         >
           {LANG_OPTIONS.map((opt) => {
@@ -134,32 +166,42 @@ export default function App() {
 
       {/* Main Spatial Viewport */}
       <main className="relative min-h-0 flex-1">
-        {view === 'globe' ? (
-          <GlobeJourney
-            lang={lang}
-            onEnterGabes={() => {
-              setInitialDimension('all');
-              setView('map');
-            }}
-          />
-        ) : (
+        <ErrorBoundary
+          key={view}
+          title={copy.brand}
+          message={copy.errorMessage}
+          retryLabel={copy.errorRetry}
+        >
           <Suspense
             fallback={
-              <div className="flex h-full w-full items-center justify-center bg-[#060b14] text-xs font-medium tracking-wider text-stone-300">
+              <div
+                role="status"
+                className="flex h-full w-full items-center justify-center bg-[#060b14] text-xs font-medium tracking-wider text-stone-300"
+              >
                 <span className="inline-flex items-center gap-2">
                   <span className="h-2 w-2 animate-pulse rounded-full bg-[#5eead4]" />
-                  <span>{copy.navMap}…</span>
+                  <span>{view === 'globe' ? copy.navGlobe : copy.navMap}…</span>
                 </span>
               </div>
             }
           >
-            <GabesMapExplorer
-              lang={lang}
-              initialDimension={initialDimension}
-              onBackToGlobe={() => setView('globe')}
-            />
+            {view === 'globe' ? (
+              <GlobeJourney
+                lang={lang}
+                onEnterGabes={() => {
+                  setInitialDimension('all');
+                  setView('map');
+                }}
+              />
+            ) : (
+              <GabesMapExplorer
+                lang={lang}
+                initialDimension={initialDimension}
+                onBackToGlobe={() => setView('globe')}
+              />
+            )}
           </Suspense>
-        )}
+        </ErrorBoundary>
       </main>
 
       <AboutModal

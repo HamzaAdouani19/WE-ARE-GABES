@@ -4,4 +4,4 @@ Site: https://portfolio-hamza-pied.vercel.app
 Location: Tunisia - Djerba
 
 /* SITE */
-Built with: React, Vite, TypeScript, MapLibre
+Built with: React, Vite, TypeScript, MapLibre GL, Tailwind CSS

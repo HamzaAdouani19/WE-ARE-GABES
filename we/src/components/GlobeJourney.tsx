@@ -202,7 +202,6 @@ export function GlobeJourney({ lang, onEnterGabes }: GlobeJourneyProps) {
 
     const markerEl = document.createElement("button");
     markerEl.type = "button";
-    markerEl.setAttribute("aria-label", "Gabès, Tunisia");
     markerEl.className =
       "group flex items-center gap-2 cursor-pointer focus:outline-none";
     markerEl.innerHTML = `
@@ -420,7 +419,7 @@ export function GlobeJourney({ lang, onEnterGabes }: GlobeJourneyProps) {
               <div
                 className="flex flex-nowrap sm:flex-wrap items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0"
                 role="group"
-                aria-label="Journey stages"
+                aria-label={copy.journeyStagesLabel}
               >
                 {GLOBE_STAGES.map((stage, idx) => {
                   const active = idx === stageIdx;
@@ -467,7 +466,7 @@ export function GlobeJourney({ lang, onEnterGabes }: GlobeJourneyProps) {
                     onEnterGabes();
                   }
                 }}
-                aria-label="Travel from World to Gabès"
+                aria-label={copy.journeySliderLabel}
                 className="h-1.5 w-full cursor-pointer accent-[#5eead4]"
               />
               <span className="font-mono-tabular w-10 text-right text-[11px] text-stone-400">

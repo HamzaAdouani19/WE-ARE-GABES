@@ -381,6 +381,7 @@ function StoryGallery({
               key={`${placeId}-${activeIndex}-${currentPhoto.src}`}
               src={currentPhoto.src}
               alt={`${title} — ${currentPhoto.caption[lang]}`}
+              decoding="async"
               referrerPolicy="no-referrer"
               custom={direction}
               variants={gallerySlideVariants}
@@ -530,8 +531,10 @@ function StoryGallery({
                   </div>
                 ) : (
                   <img
-                    src={photo.src}
+                    src={photo.src.replace(/\.webp$/, "-thumb.webp")}
                     alt={photo.caption[lang]}
+                    loading="lazy"
+                    decoding="async"
                     referrerPolicy="no-referrer"
                     onError={() =>
                       setFailedSrcs((prev) => ({ ...prev, [photo.src]: true }))
@@ -1109,6 +1112,7 @@ export function GabesMapExplorer({
                         key={place.id}
                         role="button"
                         tabIndex={0}
+                        aria-label={place.title[lang]}
                         className="group cursor-pointer rounded-xl border border-stone-200 bg-white p-3.5 transition-colors hover:border-stone-400 focus-visible:outline-2 focus-visible:outline-[#1f7d72]"
                         onClick={() => handleSelectPlace(place)}
                         onKeyDown={(e) => {
@@ -1121,8 +1125,12 @@ export function GabesMapExplorer({
                         <div className="flex gap-3.5">
                           <div className="h-20 w-24 shrink-0 overflow-hidden rounded-lg bg-stone-200">
                             <img
-                              src={place.image}
+                              src={place.image.replace(/\.webp$/, "-thumb.webp")}
                               alt={place.title[lang]}
+                              loading="lazy"
+                              decoding="async"
+                              width={96}
+                              height={80}
                               referrerPolicy="no-referrer"
                               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                             />

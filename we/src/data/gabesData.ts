@@ -302,7 +302,7 @@ export const PLACES: PlaceStory[] = [
     },
     coordinates: { lat: 33.8768, lng: 10.0562 },
     elevationMeters: 14,
-    image: '/src/assets/images/gabes_oasis_chenini_1794999255057.jpg',
+    image: '/images/gabes_oasis_chenini.webp',
     imageCaption: {
       en: 'Three-tier agroforestry beneath golden afternoon light in Chenini, Gabès.',
       ar: 'نظام الزراعة ثلاثية الطوابق في واحة شنني قابس وقت الأصيل.',
@@ -310,7 +310,7 @@ export const PLACES: PlaceStory[] = [
     },
     gallery: [
       {
-        src: '/src/assets/images/gabes_oasis_chenini_1794999255057.jpg',
+        src: '/images/gabes_oasis_chenini.webp',
         caption: {
           en: 'Three-tier oasis gardens irrigated beneath towering date palms in Chenini.',
           ar: 'حدائق الواحة ثلاثية الطوابق المروية تحت ظلال النخيل في شنني.',
@@ -318,7 +318,7 @@ export const PLACES: PlaceStory[] = [
         },
       },
       {
-        src: '/src/assets/images/gabes_jara_souk_crafts_1794999258465.jpg',
+        src: '/images/gabes_jara_souk_crafts.webp',
         caption: {
           en: 'Freshly harvested Gabès henna leaves and handwoven palm-frond baskets from the oasis.',
           ar: 'أوراق الحناء القابسية المقطوفة من الواحة وقفف السعف التقليدية.',
@@ -326,7 +326,7 @@ export const PLACES: PlaceStory[] = [
         },
       },
       {
-        src: '/src/assets/images/gabes_maritime_corniche_1794999256668.jpg',
+        src: '/images/gabes_maritime_corniche.webp',
         caption: {
           en: 'Where the oasis greenery meets the calm Mediterranean shoreline of the Gulf of Gabès.',
           ar: 'حيث يلتقي خضار الواحة بمياه خليج قابس الهادئة عند الغروب.',
@@ -395,7 +395,7 @@ export const PLACES: PlaceStory[] = [
     },
     coordinates: { lat: 33.89, lng: 10.05 }, // Approximate — verify exact site
     elevationMeters: 20,
-    image: '/src/assets/images/gabes_oasis_chenini_1794999255057.jpg',
+    image: '/images/gabes_oasis_chenini.webp',
     access: {
       en: 'Western Gabès — exact access point to be confirmed',
       ar: 'غرب قابس — نقطة الوصول الدقيقة تحتاج إلى التثبت',
@@ -430,7 +430,7 @@ export const PLACES: PlaceStory[] = [
     },
     coordinates: { lat: 33.537229, lng: 9.864137 },
     elevationMeters: 460,
-    image: '/src/assets/images/gabes_toujane_village_1794999257994.jpg',
+    image: '/images/gabes_toujane_village.webp',
     access: {
       en: 'Near Matmata, along the Matmata–Douz road',
       ar: 'بالقرب من مطماطة، على طريق مطماطة دوز',
@@ -465,7 +465,7 @@ export const PLACES: PlaceStory[] = [
     },
     coordinates: { lat: 33.85575, lng: 10.09593 },
     elevationMeters: 10,
-    image: '/src/assets/images/gabes_oasis_chenini_1794999255057.jpg',
+    image: '/images/gabes_oasis_chenini.webp',
     access: {
       en: 'Southern Gabès, near Sidi Boulbaba',
       ar: 'جنوب قابس بالقرب من سيدي بولبابة',
@@ -500,7 +500,7 @@ export const PLACES: PlaceStory[] = [
     },
     coordinates: { lat: 34.2299, lng: 9.5985 }, // Town reference, NOT verified lake coordinates
     elevationMeters: 88,
-    image: '/src/assets/images/gabes_maritime_corniche_1794999256668.jpg',
+    image: '/images/gabes_maritime_corniche.webp',
     access: {
       en: 'Menzel El Habib — exact salt-flat location to be confirmed',
       ar: 'منزل الحبيب — الموقع الدقيق للسبخة يحتاج إلى التثبت',
@@ -535,7 +535,7 @@ export const PLACES: PlaceStory[] = [
     },
     coordinates: { lat: 33.59586, lng: 10.31186 },
     elevationMeters: 15,
-    image: '/src/assets/images/gabes_toujane_village_1794999257994.jpg',
+    image: '/images/gabes_toujane_village.webp',
     access: {
       en: 'Near Mareth, along the RN1',
       ar: 'بالقرب من مارث على الطريق الوطنية رقم 1',
@@ -570,7 +570,7 @@ export const PLACES: PlaceStory[] = [
     },
     coordinates: { lat: 33.54271, lng: 9.96728 },
     elevationMeters: 420,
-    image: '/src/assets/images/gabes_matmata_troglodyte_1794999256442.jpg',
+    image: '/images/gabes_matmata_troglodyte.webp',
     access: {
       en: 'Old Matmata',
       ar: 'مطماطة القديمة',
@@ -605,7 +605,7 @@ export const PLACES: PlaceStory[] = [
     },
     coordinates: { lat: 33.92333, lng: 10.10333 },
     elevationMeters: 2,
-    image: '/src/assets/images/gabes_maritime_corniche_1794999256668.jpg',
+    image: '/images/gabes_maritime_corniche.webp',
     access: {
       en: 'Ghannouch coastal area',
       ar: 'المنطقة الساحلية بغنوش',
@@ -640,7 +640,7 @@ export const PLACES: PlaceStory[] = [
     },
     coordinates: { lat: 33.54598, lng: 10.09816 },
     elevationMeters: 240,
-    image: '/src/assets/images/gabes_toujane_village_1794999257994.jpg',
+    image: '/images/gabes_toujane_village.webp',
     access: {
       en: 'Beni Zelten, Nouvelle Matmata area',
       ar: 'بني زلطن، منطقة مطماطة الجديدة',
@@ -776,6 +776,11 @@ export const UI_COPY: Record<
     visionQuote: string;
     downloadZipLabel: string;
     close: string;
+    errorMessage: string;
+    errorRetry: string;
+    languageLabel: string;
+    journeyStagesLabel: string;
+    journeySliderLabel: string;
     noResults: string;
     clearFilters: string;
   }
@@ -827,6 +832,11 @@ export const UI_COPY: Record<
     visionQuote: 'The World → Africa → Tunisia → Gabès → Its Delegations → Its Places → Its Stories.',
     downloadZipLabel: 'Download Complete Project (.zip)',
     close: 'Close',
+    errorMessage: 'Something went wrong while loading this view.',
+    errorRetry: 'Reload',
+    languageLabel: 'Language',
+    journeyStagesLabel: 'Journey stages',
+    journeySliderLabel: 'Travel from the World to Gabès',
     noResults: 'No places match this filter.',
     clearFilters: 'Reset filters',
   },
@@ -877,6 +887,11 @@ export const UI_COPY: Record<
     visionQuote: 'العالم ← إفريقيا ← تونس ← قابس ← المعتمديات ← الأماكن ← القصص.',
     downloadZipLabel: 'تحميل المشروع كاملاً (.zip)',
     close: 'إغلاق',
+    errorMessage: 'حدث خطأ أثناء تحميل هذا العرض.',
+    errorRetry: 'إعادة التحميل',
+    languageLabel: 'اللغة',
+    journeyStagesLabel: 'مراحل الرحلة',
+    journeySliderLabel: 'السفر من العالم إلى قابس',
     noResults: 'لا توجد نتائج مطابقة لهذا البحث.',
     clearFilters: 'إعادة ضبط الفلترة',
   },
@@ -927,6 +942,11 @@ export const UI_COPY: Record<
     visionQuote: 'Le Monde → Afrique → Tunisie → Gabès → Ses Délégations → Ses Lieux → Ses Récits.',
     downloadZipLabel: 'Télécharger le projet complet (.zip)',
     close: 'Fermer',
+    errorMessage: 'Une erreur est survenue au chargement de cette vue.',
+    errorRetry: 'Recharger',
+    languageLabel: 'Langue',
+    journeyStagesLabel: 'Étapes du voyage',
+    journeySliderLabel: 'Voyager du monde jusqu’à Gabès',
     noResults: 'Aucun lieu ne correspond à ce filtre.',
     clearFilters: 'Réinitialiser les filtres',
   },

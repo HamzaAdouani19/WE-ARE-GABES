@@ -1,17 +1,34 @@
 # WE ARE GABÈS — Every place has a story
 
-Digital Geographic & Cultural Identity Platform for **Gabès Governorate, Tunisia**.
+Plateforme géographique et culturelle interactive pour le **gouvernorat de Gabès (Tunisie)**.
+Live : https://we-are-gabes-lime.vercel.app
 
-## Experience Flow
-1. **Discover the World**: Interactive 3D Earth Globe powered by Three.js WebGL.
-2. **Travel to Gabès**: Scroll-driven cinematic zoom journey (`World → North Africa → Tunisia → Gabès`).
-3. **Enter Gabès**: Interactive MapLibre GL JS map (OpenFreeMap vector tiles + ArcGIS satellite imagery + 3D tilt).
-4. **Explore Places**: Browse all delegations of Gabès and filter across the 7 cultural dimensions (`Geography`, `Nature`, `Culture`, `Heritage`, `Experiences`, `Local Life`, `Stories`).
-5. **Discover Stories**: Editorial story reader synchronized with map `flyTo` transitions in **English**, **العربية**, and **Français**.
+## Expérience
+1. **Globe** — globe satellite MapLibre GL avec voyage au scroll (`Monde → Afrique du Nord → Tunisie → Gabès`).
+2. **Carte** — carte interactive (OpenFreeMap + imagerie Esri + relief 3D incliné).
+3. **Lieux** — délégations de Gabès, filtrables selon 7 dimensions culturelles (Géographie, Nature, Culture, Patrimoine, Expériences, Vie locale, Histoires).
+4. **Histoires** — lecteur éditorial synchronisé avec la carte, en **English**, **العربية** (RTL) et **Français**.
 
-## Running Locally
+## Stack
+React 19 · Vite 8 · TypeScript · Tailwind CSS 4 · MapLibre GL · Motion · lucide-react
+
+## Développement
 ```bash
+cd we
 npm install
-npm run dev
+npm run dev      # http://localhost:3000
+npm run check    # typecheck + build
 ```
-Open `http://localhost:3000`.
+Le projet vit dans le dossier `we/` (sur Vercel : *Root Directory = `we`*).
+
+## Structure
+- `src/data/gabesData.ts` — contenu trilingue (délégations, lieux, histoires, textes d'interface)
+- `src/components/` — `GlobeJourney`, `GabesMapExplorer`, `AboutModal`, `ErrorBoundary`
+- `public/images/` — photos en WebP (`*.webp` + miniatures `*-thumb.webp`)
+- `scripts/build-tunisia.mjs` — génération de `src/data/tunisia.geo.json`
+
+## Crédits
+Cartes © Esri, Maxar, Earthstar Geographics · © OpenStreetMap contributors / OpenFreeMap · Terrain © Mapzen / AWS Open Data.
+Les photographies du site doivent être créditées dans `AboutModal` avec leur auteur et leur licence.
+
+© Hamza Adouani — tous droits réservés.
