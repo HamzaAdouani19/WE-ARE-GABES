@@ -1,10 +1,15 @@
-import { useCallback, useEffect, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useState } from 'react';
 import { GlobeJourney } from './components/GlobeJourney';
-import { GabesMapExplorer } from './components/GabesMapExplorer';
 import { AboutModal } from './components/AboutModal';
+import Footer from './components/Footer';
 import { UI_COPY } from './data/gabesData';
 import type { AppView, DimensionKey, Language } from './types/gabes';
-import Footer from "./components/Footer";
+
+const GabesMapExplorer = lazy(() =>
+  import('./components/GabesMapExplorer').then((m) => ({
+    default: m.GabesMapExplorer,
+  }))
+);
 
 const LANG_OPTIONS: Array<{ code: Language; label: string }> = [
   { code: 'en', label: 'EN' },
@@ -44,9 +49,9 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden">
-      {/* Top Bar Contract: Zone 1 (Brand) — Zone 2 (4 concise nav links) — Zone 3 (1 action) */}
-      <header className="flex shrink-0 items-center justify-between gap-8 border-b border-white/10 bg-[#060b14] px-6 py-2.5 text-stone-100">
+    <div className="flex h-dvh w-screen flex-col overflow-hidden bg-[#060b14]">
+      {/* Top Bar Contract: Zone 1 (Brand) — Zone 2 (Nav links) — Zone 3 (Language) */}
+      <header className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 bg-[#060b14] px-3 py-2 text-stone-100 sm:gap-8 sm:px-6">
         {/* Zone 1: Brand SVG Logo */}
         <button
           type="button"
@@ -57,16 +62,16 @@ export default function App() {
           <img
             src="/logo.blanc.svg"
             alt={copy.brand}
-            className="h-15 w-auto sm:h-15"
+            className="h-9 w-auto sm:h-11"
           />
         </button>
 
-        {/* Zone 2: 4 single-line navigation links */}
-        <nav className="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm font-medium overflow-x-auto">
+        {/* Zone 2: Navigation links */}
+        <nav className="flex items-center gap-3 overflow-x-auto text-xs font-medium sm:gap-6 sm:text-sm">
           <button
             type="button"
             onClick={() => setView('globe')}
-            className={`whitespace-nowrap shrink-0 transition-colors hover:underline underline-offset-4 ${
+            className={`shrink-0 whitespace-nowrap underline-offset-4 transition-colors hover:underline ${
               view === 'globe' ? 'text-[#5eead4]' : 'text-stone-300 hover:text-white'
             }`}
           >
@@ -78,7 +83,7 @@ export default function App() {
               setInitialDimension('all');
               setView('map');
             }}
-            className={`whitespace-nowrap shrink-0 transition-colors hover:underline underline-offset-4 ${
+            className={`shrink-0 whitespace-nowrap underline-offset-4 transition-colors hover:underline ${
               view === 'map' ? 'text-[#5eead4]' : 'text-stone-300 hover:text-white'
             }`}
           >
@@ -87,36 +92,43 @@ export default function App() {
           <button
             type="button"
             onClick={() => setModalMode('dimensions')}
-            className="hidden sm:inline-block whitespace-nowrap shrink-0 text-stone-300 transition-colors hover:text-white hover:underline underline-offset-4"
+            className="hidden shrink-0 whitespace-nowrap text-stone-300 underline-offset-4 transition-colors hover:text-white hover:underline sm:inline-block"
           >
             {copy.navDimensions}
           </button>
           <button
             type="button"
             onClick={() => setModalMode('about')}
-            className="whitespace-nowrap shrink-0 text-stone-300 transition-colors hover:text-white hover:underline underline-offset-4"
+            className="shrink-0 whitespace-nowrap text-stone-300 underline-offset-4 transition-colors hover:text-white hover:underline"
           >
             {copy.navAbout}
           </button>
         </nav>
 
-        {/* Zone 3: Single primary selector control */}
-        <div className="shrink-0">
-          <label htmlFor="lang-switcher" className="sr-only">
-            Language
-          </label>
-          <select
-            id="lang-switcher"
-            value={lang}
-            onChange={(e) => setLang(e.target.value as Language)}
-            className="cursor-pointer rounded-lg border border-white/20 bg-[#0d172a] px-3 py-1.5 text-xs font-semibold text-stone-100 transition-colors hover:border-white/40 whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-[#5eead4]"
-          >
-            {LANG_OPTIONS.map((opt) => (
-              <option key={opt.code} value={opt.code}>
+        {/* Zone 3: Segmented Language Switcher */}
+        <div
+          role="group"
+          aria-label="Language"
+          className="flex shrink-0 items-center rounded-lg border border-white/15 bg-[#0d172a] p-0.5 text-[11px] font-semibold"
+        >
+          {LANG_OPTIONS.map((opt) => {
+            const active = lang === opt.code;
+            return (
+              <button
+                key={opt.code}
+                type="button"
+                aria-pressed={active}
+                onClick={() => setLang(opt.code)}
+                className={`cursor-pointer rounded-md px-2 py-1 whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-[#5eead4] ${
+                  active
+                    ? 'bg-[#1f7d72] text-white'
+                    : 'text-stone-300 hover:text-white'
+                }`}
+              >
                 {opt.label}
-              </option>
-            ))}
-          </select>
+              </button>
+            );
+          })}
         </div>
       </header>
 
@@ -131,11 +143,22 @@ export default function App() {
             }}
           />
         ) : (
-          <GabesMapExplorer
-            lang={lang}
-            initialDimension={initialDimension}
-            onBackToGlobe={() => setView('globe')}
-          />
+          <Suspense
+            fallback={
+              <div className="flex h-full w-full items-center justify-center bg-[#060b14] text-xs font-medium tracking-wider text-stone-300">
+                <span className="inline-flex items-center gap-2">
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-[#5eead4]" />
+                  <span>{copy.navMap}…</span>
+                </span>
+              </div>
+            }
+          >
+            <GabesMapExplorer
+              lang={lang}
+              initialDimension={initialDimension}
+              onBackToGlobe={() => setView('globe')}
+            />
+          </Suspense>
         )}
       </main>
 

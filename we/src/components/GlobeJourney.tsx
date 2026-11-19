@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
-import * as maplibregl from 'maplibre-gl';
-import { ArrowRight, ChevronDown, ChevronUp, Compass } from 'lucide-react';
-import { GABES_CENTER, JOURNEY_STAGES, UI_COPY } from '../data/gabesData';
-import { TUNISIA_BORDER } from '../data/worldGeo';
-import type { Language } from '../types/gabes';
+import { useEffect, useRef, useState } from "react";
+import * as maplibregl from "maplibre-gl";
+import { ArrowRight, ChevronDown, ChevronUp, Compass } from "lucide-react";
+import { GABES_CENTER, JOURNEY_STAGES, UI_COPY } from "../data/gabesData";
+// Remplacer : import { TUNISIA_BORDER } from '../data/worldGeo';
+import tunisia from "../data/tunisia.geo.json";
+import type { Language } from "../types/gabes";
 
 interface GlobeJourneyProps {
   lang: Language;
@@ -18,9 +19,9 @@ const GLOBE_STAGES = [
 ];
 
 function gabesLabel(lang: Language) {
-  if (lang === 'ar') return 'قابس، تونس';
-  if (lang === 'fr') return 'Gabès, Tunisie';
-  return 'Gabès, Tunisia';
+  if (lang === "ar") return "قابس، تونس";
+  if (lang === "fr") return "Gabès, Tunisie";
+  return "Gabès, Tunisia";
 }
 
 function lerp(a: number, b: number, t: number) {
@@ -33,7 +34,8 @@ function interpolateGlobePose(progress: number) {
     const curr = GLOBE_STAGES[i];
     const next = GLOBE_STAGES[i + 1];
     if (clamped >= curr.progress && clamped <= next.progress) {
-      const localT = (clamped - curr.progress) / (next.progress - curr.progress);
+      const localT =
+        (clamped - curr.progress) / (next.progress - curr.progress);
       const smooth = localT * localT * (3 - 2 * localT);
       return {
         lat: lerp(curr.lat, next.lat, smooth),
@@ -59,72 +61,75 @@ function interpolateGlobePose(progress: number) {
 function buildSatelliteGlobeStyle(): maplibregl.StyleSpecification {
   return {
     version: 8,
-    projection: { type: 'globe' },
+    projection: { type: "globe" },
     sky: {
-      'sky-color': '#030814',
-      'horizon-color': '#2b5f9e',
-      'fog-color': '#132744',
-      'sky-horizon-blend': 0.55,
-      'horizon-fog-blend': 0.7,
-      'fog-ground-blend': 0.4,
-      'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 5, 0.9, 8, 0.35],
+      "sky-color": "#030814",
+      "horizon-color": "#2b5f9e",
+      "fog-color": "#132744",
+      "sky-horizon-blend": 0.55,
+      "horizon-fog-blend": 0.7,
+      "fog-ground-blend": 0.4,
+      "atmosphere-blend": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        0,
+        1,
+        5,
+        0.9,
+        8,
+        0.35,
+      ],
     },
     sources: {
-      'esri-satellite': {
-        type: 'raster',
+      "esri-satellite": {
+        type: "raster",
         tiles: [
-          'https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+          "https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         ],
         tileSize: 256,
         maxzoom: 19,
-        attribution: 'Imagery © Esri, Maxar, Earthstar Geographics',
+        attribution: "Imagery © Esri, Maxar, Earthstar Geographics",
       },
-      'esri-labels': {
-        type: 'raster',
+      "esri-labels": {
+        type: "raster",
         tiles: [
-          'https://services.arcgisonline.com/arcgis/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+          "https://services.arcgisonline.com/arcgis/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
         ],
         tileSize: 256,
         maxzoom: 16,
       },
-      'tunisia-outline': {
-        type: 'geojson',
-        data: {
-          type: 'Feature',
-          properties: {},
-          geometry: {
-            type: 'LineString',
-            coordinates: TUNISIA_BORDER,
-          },
-        },
+      "tunisia-outline": {
+        type: "geojson",
+        data: tunisia as maplibregl.GeoJSONSourceSpecification["data"],
       },
     },
     layers: [
       {
-        id: 'earth-satellite',
-        type: 'raster',
-        source: 'esri-satellite',
+        id: "earth-satellite",
+        type: "raster",
+        source: "esri-satellite",
         paint: {
-          'raster-contrast': 0.08,
-          'raster-saturation': 0.06,
+          "raster-contrast": 0.08,
+          "raster-saturation": 0.06,
         },
       },
       {
-        id: 'earth-labels',
-        type: 'raster',
-        source: 'esri-labels',
+        id: "earth-labels",
+        type: "raster",
+        source: "esri-labels",
         paint: {
-          'raster-opacity': 0.85,
+          "raster-opacity": 0.85,
         },
       },
       {
-        id: 'tunisia-border-glow',
-        type: 'line',
-        source: 'tunisia-outline',
+        id: "tunisia-border-glow",
+        type: "line",
+        source: "tunisia-outline",
         paint: {
-          'line-color': '#5eead4',
-          'line-width': 2.2,
-          'line-opacity': 0.85,
+          "line-color": "#5eead4",
+          "line-width": 2.2,
+          "line-opacity": 0.85,
         },
       },
     ],
@@ -164,7 +169,9 @@ export function GlobeJourney({ lang, onEnterGabes }: GlobeJourneyProps) {
     const container = containerRef.current;
     if (!container) return;
 
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     if (prefersReducedMotion) {
       autoSpinRef.current = false;
     }
@@ -188,12 +195,16 @@ export function GlobeJourney({ lang, onEnterGabes }: GlobeJourneyProps) {
 
     mapRef.current = map;
     map.scrollZoom.disable();
-    map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
+    map.addControl(
+      new maplibregl.AttributionControl({ compact: true }),
+      "bottom-right",
+    );
 
-    const markerEl = document.createElement('button');
-    markerEl.type = 'button';
-    markerEl.setAttribute('aria-label', 'Gabès, Tunisia');
-    markerEl.className = 'group flex items-center gap-2 cursor-pointer focus:outline-none';
+    const markerEl = document.createElement("button");
+    markerEl.type = "button";
+    markerEl.setAttribute("aria-label", "Gabès, Tunisia");
+    markerEl.className =
+      "group flex items-center gap-2 cursor-pointer focus:outline-none";
     markerEl.innerHTML = `
       <span class="relative flex h-4 w-4 items-center justify-center rounded-full border-2 border-white bg-[#1f7d72] shadow-lg transition-transform duration-150 group-hover:scale-125"></span>
       <span class="rounded-md border border-white/25 bg-[#07111f]/90 px-2.5 py-1 text-[11px] font-semibold text-white shadow-lg whitespace-nowrap">
@@ -202,14 +213,20 @@ export function GlobeJourney({ lang, onEnterGabes }: GlobeJourneyProps) {
         <span class="font-mono text-[10px] text-stone-300">33.88° N</span>
       </span>
     `;
-    markerLabelRef.current = markerEl.querySelector<HTMLSpanElement>('[data-role="label"]');
-    if (markerLabelRef.current) markerLabelRef.current.textContent = gabesLabel(langRef.current);
-    markerEl.addEventListener('click', (e) => {
+    markerLabelRef.current = markerEl.querySelector<HTMLSpanElement>(
+      '[data-role="label"]',
+    );
+    if (markerLabelRef.current)
+      markerLabelRef.current.textContent = gabesLabel(langRef.current);
+    markerEl.addEventListener("click", (e) => {
       e.stopPropagation();
       onEnterRef.current();
     });
 
-    const gabesMarker = new maplibregl.Marker({ element: markerEl, anchor: 'left' })
+    const gabesMarker = new maplibregl.Marker({
+      element: markerEl,
+      anchor: "left",
+    })
       .setLngLat([GABES_CENTER.lng, GABES_CENTER.lat])
       .addTo(map);
 
@@ -217,8 +234,8 @@ export function GlobeJourney({ lang, onEnterGabes }: GlobeJourneyProps) {
       autoSpinRef.current = false;
       journeyActiveRef.current = false;
     };
-    map.on('dragstart', stopAutoSpin);
-    map.on('touchstart', () => {
+    map.on("dragstart", stopAutoSpin);
+    map.on("touchstart", () => {
       autoSpinRef.current = false;
     });
 
@@ -226,7 +243,8 @@ export function GlobeJourney({ lang, onEnterGabes }: GlobeJourneyProps) {
       e.preventDefault();
       autoSpinRef.current = false;
       journeyActiveRef.current = true;
-      const delta = Math.sign(e.deltaY) * Math.min(Math.abs(e.deltaY), 140) * 0.00125;
+      const delta =
+        Math.sign(e.deltaY) * Math.min(Math.abs(e.deltaY), 140) * 0.00125;
       const next = Math.max(0, Math.min(1, targetProgressRef.current + delta));
       targetProgressRef.current = next;
       setProgressUI(next);
@@ -238,7 +256,7 @@ export function GlobeJourney({ lang, onEnterGabes }: GlobeJourneyProps) {
         }, 420);
       }
     };
-    container.addEventListener('wheel', handleWheel, { passive: false });
+    container.addEventListener("wheel", handleWheel, { passive: false });
 
     const resizeObserver = new ResizeObserver(() => {
       map.resize();
@@ -258,7 +276,7 @@ export function GlobeJourney({ lang, onEnterGabes }: GlobeJourneyProps) {
         currentProgressRef.current = lerp(
           currentProgressRef.current,
           targetProgressRef.current,
-          alpha
+          alpha,
         );
         const pose = interpolateGlobePose(currentProgressRef.current);
         if (pose.stageIndex !== lastUiStage) {
@@ -272,7 +290,10 @@ export function GlobeJourney({ lang, onEnterGabes }: GlobeJourneyProps) {
           bearing: pose.bearing,
         });
 
-        if (Math.abs(currentProgressRef.current - targetProgressRef.current) < 0.0015) {
+        if (
+          Math.abs(currentProgressRef.current - targetProgressRef.current) <
+          0.0015
+        ) {
           currentProgressRef.current = targetProgressRef.current;
           if (targetProgressRef.current === 0) {
             journeyActiveRef.current = false;
@@ -293,7 +314,7 @@ export function GlobeJourney({ lang, onEnterGabes }: GlobeJourneyProps) {
     return () => {
       cancelAnimationFrame(rafId);
       resizeObserver.disconnect();
-      container.removeEventListener('wheel', handleWheel);
+      container.removeEventListener("wheel", handleWheel);
       gabesMarker.remove();
       map.remove();
       mapRef.current = null;
@@ -314,16 +335,21 @@ export function GlobeJourney({ lang, onEnterGabes }: GlobeJourneyProps) {
         className="pointer-events-none absolute inset-0 opacity-60"
         style={{
           backgroundImage:
-            'radial-gradient(1px 1px at 15% 25%, #e2e8f0 100%, transparent), radial-gradient(1px 1px at 45% 12%, #cbd5e1 100%, transparent), radial-gradient(1.5px 1.5px at 78% 18%, #f8fafc 100%, transparent), radial-gradient(1px 1px at 85% 65%, #94a3b8 100%, transparent), radial-gradient(1px 1px at 22% 78%, #cbd5e1 100%, transparent), radial-gradient(1.5px 1.5px at 62% 84%, #e2e8f0 100%, transparent)',
+            "radial-gradient(1px 1px at 15% 25%, #e2e8f0 100%, transparent), radial-gradient(1px 1px at 45% 12%, #cbd5e1 100%, transparent), radial-gradient(1.5px 1.5px at 78% 18%, #f8fafc 100%, transparent), radial-gradient(1px 1px at 85% 65%, #94a3b8 100%, transparent), radial-gradient(1px 1px at 22% 78%, #cbd5e1 100%, transparent), radial-gradient(1.5px 1.5px at 62% 84%, #e2e8f0 100%, transparent)",
         }}
       />
 
-      <div ref={containerRef} className="absolute inset-0 h-full w-full cursor-grab active:cursor-grabbing" />
+      <div
+        ref={containerRef}
+        className="absolute inset-0 h-full w-full cursor-grab active:cursor-grabbing"
+      />
 
       {globeFailed && (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#030814] p-8 text-center">
           <Compass className="mb-3 h-10 w-10 text-[#5eead4]" />
-          <p className="font-display text-2xl font-semibold text-white">{copy.brand}</p>
+          <p className="font-display text-2xl font-semibold text-white">
+            {copy.brand}
+          </p>
           <p className="mt-2 max-w-md text-sm text-stone-300">{copy.tagline}</p>
           <button
             type="button"
@@ -335,21 +361,26 @@ export function GlobeJourney({ lang, onEnterGabes }: GlobeJourneyProps) {
         </div>
       )}
 
-      {/* Top-Left Brand SVG Logo Overlay */}
-      <div className="pointer-events-none absolute inset-x-0 top-6 z-10 mx-auto flex max-w-6xl items-start justify-between px-6">
-        <div className="pointer-events-auto">
-          <img
-            src="/logo.blanc.svg"
-            alt="WE ARE GABÈS"
-            className="h-16 w-auto sm:h-24 drop-shadow-[0_6px_18px_rgba(0,0,0,0.65)]"
-          />
+      {/* Top Hero Intro & Quick Enter CTA */}
+      <div className="pointer-events-none absolute inset-x-0 top-5 z-10 mx-auto flex max-w-6xl items-start justify-between gap-3 px-4 sm:px-6">
+        <div className="pointer-events-auto max-w-[230px] sm:max-w-md rounded-xl border border-white/10 bg-[#060b14]/75 px-3.5 py-2 sm:px-4 sm:py-2.5 backdrop-blur-md">
+          <p className="font-mono-tabular text-[10px] uppercase tracking-widest text-[#5eead4]">
+            {lang === "ar"
+              ? "ولاية قابس · تونس"
+              : lang === "fr"
+              ? "Gouvernorat de Gabès · Tunisie"
+              : "Gabès Governorate · Tunisia"}
+          </p>
+          <p className="font-display mt-0.5 text-base sm:text-2xl font-semibold leading-snug text-white">
+            {copy.tagline}
+          </p>
         </div>
 
-        <div className="pointer-events-auto hidden sm:block">
+        <div className="pointer-events-auto shrink-0">
           <button
             type="button"
             onClick={onEnterGabes}
-            className="inline-flex items-center gap-2 rounded-lg bg-[#1f7d72] px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-[#18685e] focus-visible:outline-2 focus-visible:outline-white whitespace-nowrap shrink-0"
+            className="inline-flex items-center gap-2 rounded-lg bg-[#1f7d72] px-3.5 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-semibold text-white shadow-lg transition-colors hover:bg-[#18685e] focus-visible:outline-2 focus-visible:outline-white whitespace-nowrap shrink-0"
           >
             <span>{copy.enterGabes}</span>
             <ArrowRight className="h-4 w-4 rtl:rotate-180" />
@@ -358,20 +389,39 @@ export function GlobeJourney({ lang, onEnterGabes }: GlobeJourneyProps) {
       </div>
 
       {/* Collapsible Bottom Journey Dock */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-5 z-20 flex flex-col items-center px-4">
+      <div className="pointer-events-none absolute inset-x-0 bottom-9 z-20 flex flex-col items-center px-3 sm:px-4">
         <button
           type="button"
           onClick={() => setDockCollapsed((v) => !v)}
           className="pointer-events-auto mb-2 inline-flex items-center gap-1.5 rounded-t-lg border border-white/15 bg-[#08101e]/95 px-3 py-1 text-[11px] font-medium text-stone-300 transition-colors hover:text-white"
         >
-          {dockCollapsed ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-          <span>{dockCollapsed ? copy.continueScrolling : copy.scrollHint}</span>
+          {dockCollapsed ? (
+            <ChevronUp className="h-3.5 w-3.5" />
+          ) : (
+            <ChevronDown className="h-3.5 w-3.5" />
+          )}
+          <span className="hidden sm:inline">
+            {dockCollapsed ? copy.continueScrolling : copy.scrollHint}
+          </span>
+          <span className="sm:hidden">
+            {dockCollapsed
+              ? copy.continueScrolling
+              : lang === "ar"
+              ? "اضغط على مرحلة أو اسحب الشريط"
+              : lang === "fr"
+              ? "Touchez une étape ou glissez le curseur"
+              : "Tap a stage or drag the slider"}
+          </span>
         </button>
 
         {!dockCollapsed && (
-          <div className="pointer-events-auto w-full max-w-3xl rounded-xl border border-white/15 bg-[#08101e]/95 px-4 py-3 shadow-2xl">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Journey stages">
+          <div className="pointer-events-auto w-full max-w-3xl rounded-xl border border-white/15 bg-[#08101e]/95 px-3.5 py-2.5 sm:px-4 sm:py-3 shadow-2xl">
+            <div className="flex items-center justify-between gap-3">
+              <div
+                className="flex flex-nowrap sm:flex-wrap items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0"
+                role="group"
+                aria-label="Journey stages"
+              >
                 {GLOBE_STAGES.map((stage, idx) => {
                   const active = idx === stageIdx;
                   return (
@@ -379,13 +429,15 @@ export function GlobeJourney({ lang, onEnterGabes }: GlobeJourneyProps) {
                       key={stage.id}
                       type="button"
                       onClick={() => jumpToStage(stage.progress)}
-                      className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap shrink-0 ${
+                      className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 sm:px-3 text-xs font-medium transition-colors whitespace-nowrap shrink-0 ${
                         active
-                          ? 'bg-[#1f7d72] text-white'
-                          : 'bg-white/5 text-stone-300 hover:bg-white/10 hover:text-white'
+                          ? "bg-[#1f7d72] text-white"
+                          : "bg-white/5 text-stone-300 hover:bg-white/10 hover:text-white"
                       }`}
                     >
-                      <span className="font-mono-tabular opacity-75">{stage.stepNum}</span>
+                      <span className="font-mono-tabular opacity-75">
+                        {stage.stepNum}
+                      </span>
                       <span>{stage.title[lang]}</span>
                     </button>
                   );
@@ -395,14 +447,14 @@ export function GlobeJourney({ lang, onEnterGabes }: GlobeJourneyProps) {
               <button
                 type="button"
                 onClick={onEnterGabes}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-[#5eead4]/40 bg-[#132930] px-3.5 py-1.5 text-xs font-semibold text-[#5eead4] transition-colors hover:bg-[#1f7d72] hover:text-white whitespace-nowrap shrink-0"
+                className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-[#5eead4]/40 bg-[#132930] px-3.5 py-1.5 text-xs font-semibold text-[#5eead4] transition-colors hover:bg-[#1f7d72] hover:text-white whitespace-nowrap shrink-0"
               >
                 <span>{copy.enterGabes}</span>
                 <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />
               </button>
             </div>
 
-            <div className="mt-3 flex items-center gap-3">
+            <div className="mt-2.5 sm:mt-3 flex items-center gap-3">
               <input
                 type="range"
                 min={0}

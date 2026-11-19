@@ -118,15 +118,14 @@ export function AboutModal({
               </ul>
             </div>
 
-            <div className="mt-6 border-t border-white/10 pt-4 text-xs text-white/60">
-              <p>Conception, design et développement : Hamza (Tunisie).</p>
+            <div className="mt-6 border-t border-stone-200 pt-4 text-xs text-stone-600 space-y-1">
+              <p>Conception, design et développement : Hamza Adouani (Tunisie).</p>
               <p>
-                © {new Date().getFullYear()} Hamza. Reproduction interdite sans
+                © {new Date().getFullYear()} Hamza Adouani. Reproduction interdite sans
                 autorisation écrite.
               </p>
               <p>
-                Cartes : © OpenStreetMap contributors / MapLibre. Photos :
-                sources et licences à compléter.
+                Cartes : © Esri, Maxar, Earthstar Geographics · © OpenStreetMap contributors / OpenFreeMap · Terrain © Mapzen / AWS Open Data · MapLibre GL.
               </p>
             </div>
           </div>
