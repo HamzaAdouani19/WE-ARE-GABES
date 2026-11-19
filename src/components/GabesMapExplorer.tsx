@@ -22,6 +22,7 @@ import {
   GABES_CENTER,
   PLACES,
   UI_COPY,
+  normalizeSearch,
 } from '../data/gabesData';
 import { GABES_CULTURAL_ROUTE } from '../data/worldGeo';
 import type { DimensionKey, GalleryPhoto, Language, PlaceStory } from '../types/gabes';
@@ -33,6 +34,16 @@ interface GabesMapExplorerProps {
 }
 
 type MapStyleMode = 'hybrid' | 'map' | 'satellite';
+
+function readPlaceSlug(): string | null {
+  const match = window.location.hash.match(/^#\/place\/(.+)$/);
+  return match?.[1] ?? null;
+}
+
+function goToPlace(slug: string | null) {
+  const nextHash = slug ? `#/place/${encodeURIComponent(slug)}` : '#/map';
+  if (window.location.hash !== nextHash) window.location.hash = nextHash;
+}
 
 function getMapStyle(mode: MapStyleMode): string | maplibregl.StyleSpecification {
   if (mode === 'map') {
@@ -499,21 +510,39 @@ export function GabesMapExplorer({
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
   const delegationMarkersRef = useRef<maplibregl.Marker[]>([]);
+  const is3DRef = useRef(true);
+  const delegationHandlerRef = useRef<(id: string) => void>(() => {});
 
   const [selectedDimension, setSelectedDimension] = useState<DimensionKey>(initialDimension);
   const [selectedDelegationId, setSelectedDelegationId] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
+  const [routeSlug, setRouteSlug] = useState(readPlaceSlug);
   const [mapMode, setMapMode] = useState<MapStyleMode>('hybrid');
   const [is3DTerrain, setIs3DTerrain] = useState(true);
   const [mapReady, setMapReady] = useState(false);
+  is3DRef.current = is3DTerrain;
+
+  const selectedPlaceId = useMemo(
+    () => PLACES.find((place) => place.slug === routeSlug)?.id ?? null,
+    [routeSlug]
+  );
 
   useEffect(() => {
     setSelectedDimension(initialDimension);
   }, [initialDimension]);
 
+  useEffect(() => {
+    const handleHashChange = () => setRouteSlug(readPlaceSlug());
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  useEffect(() => {
+    if (routeSlug && !selectedPlaceId) goToPlace(null);
+  }, [routeSlug, selectedPlaceId]);
+
   const filteredPlaces = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
+    const q = normalizeSearch(searchQuery.trim());
     return PLACES.filter((place) => {
       const matchesDimension =
         selectedDimension === 'all' ||
@@ -540,11 +569,9 @@ export function GabesMapExplorer({
         delegation?.name.en ?? '',
         delegation?.name.ar ?? '',
         delegation?.name.fr ?? '',
-      ]
-        .join(' ')
-        .toLowerCase();
+      ].join(' ');
 
-      return haystack.includes(q);
+      return normalizeSearch(haystack).includes(q);
     });
   }, [selectedDimension, selectedDelegationId, searchQuery]);
 
@@ -580,7 +607,7 @@ export function GabesMapExplorer({
 
     map.on('style.load', () => {
       try {
-        applyTerrainAndRouteOverlay(map, true);
+        applyTerrainAndRouteOverlay(map, is3DRef.current);
       } catch {
         // ignore if style resets
       }
@@ -656,7 +683,7 @@ export function GabesMapExplorer({
         'cursor-pointer rounded bg-[#0b1322]/75 px-2 py-0.5 text-[10px] font-medium tracking-wide text-stone-200 border border-white/20 shadow hover:bg-[#1f7d72] hover:text-white transition-colors';
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        handleDelegationChange(del.id);
+        delegationHandlerRef.current(del.id);
       });
 
       const marker = new maplibregl.Marker({ element: btn, anchor: 'center' })
@@ -765,23 +792,12 @@ export function GabesMapExplorer({
   }, [filteredPlaces, selectedPlaceId, lang]);
 
   const handleSelectPlace = (place: PlaceStory) => {
-    setSelectedPlaceId(place.id);
-    const map = mapRef.current;
-    if (map) {
-      map.flyTo({
-        center: [place.coordinates.lng, place.coordinates.lat],
-        zoom: Math.max(map.getZoom(), 13.4),
-        pitch: is3DTerrain ? 50 : 24,
-        bearing: -12,
-        duration: 1050,
-        essential: true,
-      });
-    }
+    goToPlace(place.slug);
   };
 
   const handleDelegationChange = (delegationId: string) => {
     setSelectedDelegationId(delegationId);
-    setSelectedPlaceId(null);
+    goToPlace(null);
     const map = mapRef.current;
     if (!map) return;
 
@@ -808,7 +824,7 @@ export function GabesMapExplorer({
   };
 
   const handleResetView = () => {
-    setSelectedPlaceId(null);
+    goToPlace(null);
     setSelectedDelegationId('all');
     setSelectedDimension('all');
     setSearchQuery('');
@@ -835,6 +851,28 @@ export function GabesMapExplorer({
   const activeDelegation = activePlace
     ? DELEGATIONS.find((d) => d.id === activePlace.delegationId)
     : DELEGATIONS.find((d) => d.id === selectedDelegationId);
+
+  delegationHandlerRef.current = handleDelegationChange;
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady || !activePlace) return;
+    map.flyTo({
+      center: [activePlace.coordinates.lng, activePlace.coordinates.lat],
+      zoom: Math.max(map.getZoom(), 13.4),
+      pitch: is3DRef.current ? 50 : 24,
+      bearing: -12,
+      duration: 1050,
+      essential: true,
+    });
+  }, [activePlace?.id, mapReady]);
+
+  useEffect(() => {
+    document.title = activePlace ? `${activePlace.title[lang]} — ${copy.brand}` : copy.brand;
+    return () => {
+      document.title = copy.brand;
+    };
+  }, [activePlace, lang, copy.brand]);
 
   return (
     <div className="flex h-full w-full flex-col bg-[#FBF9F5] text-stone-900 lg:flex-row">
@@ -997,7 +1035,7 @@ export function GabesMapExplorer({
             <div className="flex items-center justify-between border-b border-stone-200 px-5 py-3.5">
               <button
                 type="button"
-                onClick={() => setSelectedPlaceId(null)}
+                onClick={() => goToPlace(null)}
                 className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-700 hover:text-stone-950"
               >
                 <ArrowLeft className="h-4 w-4 rtl:rotate-180" />

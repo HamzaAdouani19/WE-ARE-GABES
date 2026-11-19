@@ -17,6 +17,12 @@ const GLOBE_STAGES = [
   { ...JOURNEY_STAGES[3], zoom: 9.3, pitch: 48, bearing: -12 },
 ];
 
+function gabesLabel(lang: Language) {
+  if (lang === 'ar') return 'قابس، تونس';
+  if (lang === 'fr') return 'Gabès, Tunisie';
+  return 'Gabès, Tunisia';
+}
+
 function lerp(a: number, b: number, t: number) {
   return a + (b - a) * t;
 }
@@ -136,13 +142,15 @@ export function GlobeJourney({ lang, onEnterGabes }: GlobeJourneyProps) {
   const journeyActiveRef = useRef(false);
   const autoSpinRef = useRef(true);
   const enteredRef = useRef(false);
-
+  const markerLabelRef = useRef<HTMLSpanElement | null>(null);
+  const langRef = useRef(lang);
   const [progressUI, setProgressUI] = useState(0);
   const [stageIdx, setStageIdx] = useState(0);
   const [dockCollapsed, setDockCollapsed] = useState(false);
   const [globeFailed, setGlobeFailed] = useState(false);
 
   const copy = UI_COPY[lang];
+  langRef.current = lang;
 
   const jumpToStage = (targetProgress: number) => {
     autoSpinRef.current = false;
@@ -189,11 +197,13 @@ export function GlobeJourney({ lang, onEnterGabes }: GlobeJourneyProps) {
     markerEl.innerHTML = `
       <span class="relative flex h-4 w-4 items-center justify-center rounded-full border-2 border-white bg-[#1f7d72] shadow-lg transition-transform duration-150 group-hover:scale-125"></span>
       <span class="rounded-md border border-white/25 bg-[#07111f]/90 px-2.5 py-1 text-[11px] font-semibold text-white shadow-lg whitespace-nowrap">
-        <span class="text-[#5eead4]">${lang === 'ar' ? 'قابس، تونس' : 'Gabès, Tunisia'}</span>
+        <span data-role="label" class="text-[#5eead4]"></span>
         <span class="mx-1 text-stone-400">·</span>
         <span class="font-mono text-[10px] text-stone-300">33.88° N</span>
       </span>
     `;
+    markerLabelRef.current = markerEl.querySelector<HTMLSpanElement>('[data-role="label"]');
+    if (markerLabelRef.current) markerLabelRef.current.textContent = gabesLabel(langRef.current);
     markerEl.addEventListener('click', (e) => {
       e.stopPropagation();
       onEnterRef.current();
@@ -208,7 +218,9 @@ export function GlobeJourney({ lang, onEnterGabes }: GlobeJourneyProps) {
       journeyActiveRef.current = false;
     };
     map.on('dragstart', stopAutoSpin);
-    map.on('touchstart', stopAutoSpin);
+    map.on('touchstart', () => {
+      autoSpinRef.current = false;
+    });
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
@@ -285,7 +297,14 @@ export function GlobeJourney({ lang, onEnterGabes }: GlobeJourneyProps) {
       gabesMarker.remove();
       map.remove();
       mapRef.current = null;
+      markerLabelRef.current = null;
     };
+  }, []);
+
+  useEffect(() => {
+    if (markerLabelRef.current) {
+      markerLabelRef.current.textContent = gabesLabel(lang);
+    }
   }, [lang]);
 
   return (
@@ -320,9 +339,9 @@ export function GlobeJourney({ lang, onEnterGabes }: GlobeJourneyProps) {
       <div className="pointer-events-none absolute inset-x-0 top-6 z-10 mx-auto flex max-w-6xl items-start justify-between px-6">
         <div className="pointer-events-auto">
           <img
-            src="/public/logo.blanc.svg.svg"
+            src="/logo.blanc.svg.svg"
             alt="WE ARE GABÈS"
-            className="h-90 w-auto sm:h-50 drop-shadow-[0_6px_18px_rgba(0,0,0,0.65)]"
+            className="h-16 w-auto sm:h-24 drop-shadow-[0_6px_18px_rgba(0,0,0,0.65)]"
           />
         </div>
 

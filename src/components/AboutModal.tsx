@@ -1,4 +1,5 @@
-import { Download, X } from 'lucide-react';
+import { useEffect } from 'react';
+import { X } from 'lucide-react';
 import { CULTURAL_DIMENSIONS, UI_COPY } from '../data/gabesData';
 import type { DimensionKey, Language } from '../types/gabes';
 
@@ -17,6 +18,15 @@ export function AboutModal({
   onClose,
   onSelectDimension,
 }: AboutModalProps) {
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open, onClose]);
+
   if (!open) return null;
 
   const copy = UI_COPY[lang];

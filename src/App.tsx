@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { GlobeJourney } from './components/GlobeJourney';
 import { GabesMapExplorer } from './components/GabesMapExplorer';
 import { AboutModal } from './components/AboutModal';
@@ -13,11 +13,24 @@ const LANG_OPTIONS: Array<{ code: Language; label: string }> = [
 
 export default function App() {
   const [lang, setLang] = useState<Language>('en');
-  const [view, setView] = useState<AppView>('globe');
+  const [hash, setHash] = useState(() => window.location.hash);
   const [initialDimension, setInitialDimension] = useState<DimensionKey>('all');
   const [modalMode, setModalMode] = useState<'about' | 'dimensions' | null>(null);
 
   const copy = UI_COPY[lang];
+  const view: AppView =
+    hash.startsWith('#/map') || hash.startsWith('#/place/') ? 'map' : 'globe';
+
+  useEffect(() => {
+    const handleHashChange = () => setHash(window.location.hash);
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  const setView = useCallback((next: AppView) => {
+    const nextHash = next === 'map' ? '#/map' : '';
+    if (window.location.hash !== nextHash) window.location.hash = nextHash;
+  }, []);
 
   useEffect(() => {
     document.documentElement.lang = lang;
@@ -41,7 +54,7 @@ export default function App() {
           className="shrink-0 cursor-pointer transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-[#5eead4]"
         >
           <img
-            src="/public/logo.blanc.svg.svg"
+            src="/logo.blanc.svg.svg"
             alt={copy.brand}
             className="h-15 w-auto sm:h-15"
           />
