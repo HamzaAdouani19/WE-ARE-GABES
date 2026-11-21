@@ -64,3 +64,11 @@ export interface CulturalDimension {
   description: LocalizedText;
   accentHex: string;
 }
+
+
+export interface AdminProfile {
+  id: string;
+  email: string;
+  displayName: string;
+}
+

@@ -17,21 +17,24 @@ import {
   Search,
   SlidersHorizontal,
 } from "lucide-react";
+
 import {
-  CULTURAL_DIMENSIONS,
-  DELEGATIONS,
   GABES_CENTER,
-  PLACES,
   UI_COPY,
   normalizeSearch,
 } from "../data/gabesData";
 import { GABES_CULTURAL_ROUTE } from "../data/worldGeo";
+import { getPublicContent } from "../services/public-content.service";
+
 import type {
+  CulturalDimension,
+  Delegation,
   DimensionKey,
   GalleryPhoto,
   Language,
   PlaceStory,
 } from "../types/gabes";
+
 import tunisia from "../data/tunisia.geo.json";
 
 interface GabesMapExplorerProps {
@@ -48,8 +51,13 @@ function readPlaceSlug(): string | null {
 }
 
 function goToPlace(slug: string | null) {
-  const nextHash = slug ? `#/place/${encodeURIComponent(slug)}` : "#/map";
-  if (window.location.hash !== nextHash) window.location.hash = nextHash;
+  const nextHash = slug
+    ? `#/place/${encodeURIComponent(slug)}`
+    : "#/map";
+
+  if (window.location.hash !== nextHash) {
+    window.location.hash = nextHash;
+  }
 }
 
 function getMapStyle(
@@ -97,6 +105,7 @@ function getMapStyle(
       tileSize: 256,
       maxzoom: 16,
     };
+
     layers.push({
       id: "hybrid-labels",
       type: "raster",
@@ -122,22 +131,29 @@ function getMapStyle(
   };
 }
 
-function getDimensionAccent(dim: PlaceStory["dimension"]): string {
-  return CULTURAL_DIMENSIONS.find((d) => d.key === dim)?.accentHex ?? "#1f7d72";
+/* Dynamic dimension helpers: now use dimensions fetched from Supabase */
+
+function getDimensionAccent(
+  dim: PlaceStory["dimension"],
+  dimensions: CulturalDimension[],
+): string {
+  return (
+    dimensions.find((d) => d.key === dim)?.accentHex ?? "#1f7d72"
+  );
 }
 
 function getDimensionLabel(
   dim: PlaceStory["dimension"],
   lang: Language,
+  dimensions: CulturalDimension[],
 ): string {
-  return CULTURAL_DIMENSIONS.find((d) => d.key === dim)?.label[lang] ?? dim;
+  return dimensions.find((d) => d.key === dim)?.label[lang] ?? dim;
 }
 
 function applyTerrainAndRouteOverlay(
   map: maplibregl.Map,
   enableTerrain: boolean,
 ) {
-  // 1. Add real 3D elevation DEM source (Terrarium)
   if (!map.getSource("terrain-dem")) {
     map.addSource("terrain-dem", {
       type: "raster-dem",
@@ -152,15 +168,20 @@ function applyTerrainAndRouteOverlay(
   }
 
   if (enableTerrain) {
-    map.setTerrain({ source: "terrain-dem", exaggeration: 1.55 });
+    map.setTerrain({
+      source: "terrain-dem",
+      exaggeration: 1.55,
+    });
   } else {
     map.setTerrain(null);
   }
 
-  map.addSource("tunisia", {
-    type: "geojson",
-    data: tunisia as unknown as maplibregl.GeoJSONSourceSpecification["data"],
-  });
+  if (!map.getSource("tunisia")) {
+    map.addSource("tunisia", {
+      type: "geojson",
+      data: tunisia as unknown as maplibregl.GeoJSONSourceSpecification["data"],
+    });
+  }
 
   if (!map.getLayer("tunisia-outline")) {
     map.addLayer({
@@ -172,12 +193,15 @@ function applyTerrainAndRouteOverlay(
         "line-width": 1.5,
         "line-opacity": 0.9,
       },
-      layout: { "line-join": "round", "line-cap": "round" },
+      layout: {
+        "line-join": "round",
+        "line-cap": "round",
+      },
     });
   }
 
-  // 2. Add Cultural Corridor Route Line
   const sourceId = "gabes-cultural-route";
+
   if (!map.getSource(sourceId)) {
     map.addSource(sourceId, {
       type: "geojson",
@@ -254,24 +278,34 @@ function StoryGallery({
   placeId: string;
 }) {
   const safePhotos = photos.length > 0 ? photos : [];
+
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState<1 | -1>(1);
   const [isHovered, setIsHovered] = useState(false);
   const [failedSrcs, setFailedSrcs] = useState<Record<string, boolean>>({});
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
   const [isAutoPlaying, setIsAutoPlaying] = useState(() => {
     if (typeof window === "undefined") return true;
+
     return !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   });
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+
     setPrefersReducedMotion(mq.matches);
+
     const onChange = (e: MediaQueryListEvent) => {
       setPrefersReducedMotion(e.matches);
-      if (e.matches) setIsAutoPlaying(false);
+
+      if (e.matches) {
+        setIsAutoPlaying(false);
+      }
     };
+
     mq.addEventListener("change", onChange);
+
     return () => mq.removeEventListener("change", onChange);
   }, []);
 
@@ -286,9 +320,14 @@ function StoryGallery({
   const goTo = useCallback(
     (nextIndex: number, dir?: 1 | -1) => {
       if (total <= 1) return;
+
       const wrapped = ((nextIndex % total) + total) % total;
+
       if (wrapped === activeIndex) return;
-      const computedDir: 1 | -1 = dir ?? (wrapped > activeIndex ? 1 : -1);
+
+      const computedDir: 1 | -1 =
+        dir ?? (wrapped > activeIndex ? 1 : -1);
+
       setDirection(computedDir);
       setActiveIndex(wrapped);
     },
@@ -305,10 +344,12 @@ function StoryGallery({
 
   useEffect(() => {
     if (!isAutoPlaying || isHovered || total <= 1) return;
+
     const timer = window.setInterval(() => {
       setDirection(1);
       setActiveIndex((prev) => (prev + 1) % total);
     }, 4500);
+
     return () => window.clearInterval(timer);
   }, [isAutoPlaying, isHovered, total]);
 
@@ -316,18 +357,21 @@ function StoryGallery({
 
   const currentPhoto = safePhotos[activeIndex] ?? safePhotos[0];
   const currentFailed = Boolean(failedSrcs[currentPhoto.src]);
+
   const prevLabel =
     lang === "ar"
       ? "الصورة السابقة"
       : lang === "fr"
         ? "Photo précédente"
         : "Previous photo";
+
   const nextLabel =
     lang === "ar"
       ? "الصورة التالية"
       : lang === "fr"
         ? "Photo suivante"
         : "Next photo";
+
   const toggleLabel = isAutoPlaying
     ? lang === "ar"
       ? "إيقاف العرض التلقائي"
@@ -368,7 +412,9 @@ function StoryGallery({
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: prefersReducedMotion ? 0.01 : 0.35 }}
+              transition={{
+                duration: prefersReducedMotion ? 0.01 : 0.35,
+              }}
               className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-stone-200 via-stone-100 to-amber-50 p-6 text-center"
             >
               <Compass className="mb-2 h-7 w-7 text-[#1f7d72]" />
@@ -392,22 +438,24 @@ function StoryGallery({
                 ease: [0.22, 1, 0.36, 1],
               }}
               onError={() =>
-                setFailedSrcs((prev) => ({ ...prev, [currentPhoto.src]: true }))
+                setFailedSrcs((prev) => ({
+                  ...prev,
+                  [currentPhoto.src]: true,
+                }))
               }
               className="h-full w-full object-cover"
             />
           )}
         </AnimatePresence>
 
-        {/* Subtle Top & Bottom Scrim for WCAG AA Overlay Controls */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/55" />
 
-        {/* Top Bar: Counter & Auto-Play Toggle */}
         {total > 1 && (
           <div className="absolute inset-x-3 top-3 z-10 flex items-center justify-between gap-2">
             <span className="font-mono-tabular rounded-md border border-white/20 bg-black/55 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur-sm">
               {activeIndex + 1} / {total}
             </span>
+
             <button
               type="button"
               onClick={() => setIsAutoPlaying((prev) => !prev)}
@@ -420,6 +468,7 @@ function StoryGallery({
               ) : (
                 <Play className="h-3 w-3" />
               )}
+
               <span>
                 {isAutoPlaying
                   ? lang === "ar"
@@ -437,7 +486,6 @@ function StoryGallery({
           </div>
         )}
 
-        {/* Prev / Next Navigation Buttons */}
         {total > 1 && (
           <div
             dir="ltr"
@@ -451,6 +499,7 @@ function StoryGallery({
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
+
             <button
               type="button"
               onClick={handleNext}
@@ -462,11 +511,11 @@ function StoryGallery({
           </div>
         )}
 
-        {/* Bottom Progress Segment Indicators */}
         {total > 1 && (
           <div className="absolute inset-x-3 bottom-3 z-10 flex items-center gap-1.5">
             {safePhotos.map((photo, idx) => {
               const isActive = idx === activeIndex;
+
               return (
                 <button
                   key={`${photo.src}-${idx}`}
@@ -491,7 +540,6 @@ function StoryGallery({
         )}
       </div>
 
-      {/* Animated Caption */}
       <div className="mt-2.5 min-h-[2.25rem]">
         <AnimatePresence mode="wait" initial={false}>
           <motion.p
@@ -499,7 +547,9 @@ function StoryGallery({
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: prefersReducedMotion ? 0.01 : 0.22 }}
+            transition={{
+              duration: prefersReducedMotion ? 0.01 : 0.22,
+            }}
             className="font-serif text-xs italic leading-relaxed text-stone-600"
           >
             {currentPhoto.caption[lang]}
@@ -507,12 +557,12 @@ function StoryGallery({
         </AnimatePresence>
       </div>
 
-      {/* Interactive Thumbnail Strip */}
       {total > 1 && (
         <div className="mt-2 grid grid-cols-3 gap-2">
           {safePhotos.map((photo, idx) => {
             const isActive = idx === activeIndex;
             const thumbFailed = Boolean(failedSrcs[photo.src]);
+
             return (
               <button
                 key={`thumb-${photo.src}-${idx}`}
@@ -534,7 +584,10 @@ function StoryGallery({
                     alt={photo.caption[lang]}
                     referrerPolicy="no-referrer"
                     onError={() =>
-                      setFailedSrcs((prev) => ({ ...prev, [photo.src]: true }))
+                      setFailedSrcs((prev) => ({
+                        ...prev,
+                        [photo.src]: true,
+                      }))
                     }
                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
@@ -554,17 +607,36 @@ export function GabesMapExplorer({
   onBackToGlobe,
 }: GabesMapExplorerProps) {
   const copy = UI_COPY[lang];
+
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
   const delegationMarkersRef = useRef<maplibregl.Marker[]>([]);
   const is3DRef = useRef(true);
+
   const delegationHandlerRef = useRef<(id: string) => void>(() => {});
+
+  /* -------------------------------------------------------
+     SUPABASE CONTENT STATE
+  ------------------------------------------------------- */
+
+  const [places, setPlaces] = useState<PlaceStory[]>([]);
+  const [delegations, setDelegations] = useState<Delegation[]>([]);
+  const [dimensions, setDimensions] = useState<CulturalDimension[]>([]);
+
+  const [contentLoading, setContentLoading] = useState(true);
+  const [contentError, setContentError] = useState<string | null>(null);
+
+  /* -------------------------------------------------------
+     MAP & FILTER STATE
+  ------------------------------------------------------- */
 
   const [selectedDimension, setSelectedDimension] =
     useState<DimensionKey>(initialDimension);
+
   const [selectedDelegationId, setSelectedDelegationId] =
     useState<string>("all");
+
   const [searchQuery, setSearchQuery] = useState("");
   const [routeSlug, setRouteSlug] = useState(readPlaceSlug);
   const [mapMode, setMapMode] = useState<MapStyleMode>("hybrid");
@@ -572,19 +644,71 @@ export function GabesMapExplorer({
   const [mapReady, setMapReady] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
-  const placeCountByDelegation = useMemo(() => {
-    const counts: Record<string, number> = {};
-    for (const p of PLACES) {
-      counts[p.delegationId] = (counts[p.delegationId] ?? 0) + 1;
-    }
-    return counts;
-  }, []);
-
   is3DRef.current = is3DTerrain;
 
+  /* -------------------------------------------------------
+     LOAD PUBLIC CONTENT FROM SUPABASE
+  ------------------------------------------------------- */
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadContent() {
+      try {
+        setContentLoading(true);
+        setContentError(null);
+
+        const content = await getPublicContent(lang);
+
+        if (cancelled) return;
+
+        setPlaces(content.places);
+        setDelegations(content.delegations);
+        setDimensions(content.dimensions);
+      } catch (error) {
+        console.error("Failed to load public Gabès content:", error);
+
+        if (!cancelled) {
+          setContentError(
+            lang === "ar"
+              ? "تعذّر تحميل المحتوى. يرجى التثبت من الاتصال والمحاولة مجدداً."
+              : lang === "fr"
+                ? "Impossible de charger le contenu. Vérifiez votre connexion et réessayez."
+                : "Unable to load content. Check your connection and try again.",
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setContentLoading(false);
+        }
+      }
+    }
+
+    void loadContent();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [lang]);
+
+  /* -------------------------------------------------------
+     DYNAMIC DATA
+  ------------------------------------------------------- */
+
+  const placeCountByDelegation = useMemo(() => {
+    const counts: Record<string, number> = {};
+
+    for (const place of places) {
+      counts[place.delegationId] =
+        (counts[place.delegationId] ?? 0) + 1;
+    }
+
+    return counts;
+  }, [places]);
+
   const selectedPlaceId = useMemo(
-    () => PLACES.find((place) => place.slug === routeSlug)?.id ?? null,
-    [routeSlug],
+    () => places.find((place) => place.slug === routeSlug)?.id ?? null,
+    [places, routeSlug],
   );
 
   useEffect(() => {
@@ -592,18 +716,28 @@ export function GabesMapExplorer({
   }, [initialDimension]);
 
   useEffect(() => {
-    const handleHashChange = () => setRouteSlug(readPlaceSlug());
+    const handleHashChange = () => {
+      setRouteSlug(readPlaceSlug());
+    };
+
     window.addEventListener("hashchange", handleHashChange);
-    return () => window.removeEventListener("hashchange", handleHashChange);
+
+    return () => {
+      window.removeEventListener("hashchange", handleHashChange);
+    };
   }, []);
 
+  // Do not clear a deep link until Supabase content has finished loading.
   useEffect(() => {
-    if (routeSlug && !selectedPlaceId) goToPlace(null);
-  }, [routeSlug, selectedPlaceId]);
+    if (!contentLoading && routeSlug && !selectedPlaceId) {
+      goToPlace(null);
+    }
+  }, [contentLoading, routeSlug, selectedPlaceId]);
 
   const filteredPlaces = useMemo(() => {
     const q = normalizeSearch(searchQuery.trim());
-    return PLACES.filter((place) => {
+
+    return places.filter((place) => {
       const matchesDimension =
         selectedDimension === "all" ||
         place.dimension === selectedDimension ||
@@ -613,10 +747,16 @@ export function GabesMapExplorer({
         selectedDelegationId === "all" ||
         place.delegationId === selectedDelegationId;
 
-      if (!matchesDimension || !matchesDelegation) return false;
+      if (!matchesDimension || !matchesDelegation) {
+        return false;
+      }
+
       if (!q) return true;
 
-      const delegation = DELEGATIONS.find((d) => d.id === place.delegationId);
+      const delegation = delegations.find(
+        (d) => d.id === place.delegationId,
+      );
+
       const haystack = [
         place.title.en,
         place.title.ar,
@@ -634,16 +774,26 @@ export function GabesMapExplorer({
 
       return normalizeSearch(haystack).includes(q);
     });
-  }, [selectedDimension, selectedDelegationId, searchQuery]);
+  }, [
+    places,
+    delegations,
+    selectedDimension,
+    selectedDelegationId,
+    searchQuery,
+  ]);
 
   const activePlace = useMemo(
-    () => PLACES.find((p) => p.id === selectedPlaceId) ?? null,
-    [selectedPlaceId],
+    () => places.find((place) => place.id === selectedPlaceId) ?? null,
+    [places, selectedPlaceId],
   );
 
-  // Initialize MapLibre GL JS with Real Hybrid Satellite & 3D Terrain
+  /* -------------------------------------------------------
+     INITIALIZE MAPLIBRE
+  ------------------------------------------------------- */
+
   useEffect(() => {
     const container = mapContainerRef.current;
+
     if (!container) return;
 
     const map = new maplibregl.Map({
@@ -661,6 +811,7 @@ export function GabesMapExplorer({
       new maplibregl.AttributionControl({ compact: true }),
       "bottom-right",
     );
+
     map.addControl(
       new maplibregl.NavigationControl({ visualizePitch: true }),
       "bottom-right",
@@ -668,15 +819,19 @@ export function GabesMapExplorer({
 
     map.on("styleimagemissing", (e: { id: string }) => {
       if (!map.hasImage(e.id)) {
-        map.addImage(e.id, { width: 1, height: 1, data: new Uint8Array(4) });
+        map.addImage(e.id, {
+          width: 1,
+          height: 1,
+          data: new Uint8Array(4),
+        });
       }
     });
 
     map.on("style.load", () => {
       try {
         applyTerrainAndRouteOverlay(map, is3DRef.current);
-      } catch {
-        // ignore if style resets
+      } catch (error) {
+        console.warn("Map overlay initialization failed:", error);
       }
     });
 
@@ -688,42 +843,59 @@ export function GabesMapExplorer({
     const resizeObserver = new ResizeObserver(() => {
       map.resize();
     });
+
     resizeObserver.observe(container);
 
     mapRef.current = map;
 
     return () => {
       resizeObserver.disconnect();
-      markersRef.current.forEach((m) => m.remove());
+
+      markersRef.current.forEach((marker) => marker.remove());
       markersRef.current = [];
-      delegationMarkersRef.current.forEach((m) => m.remove());
+
+      delegationMarkersRef.current.forEach((marker) => marker.remove());
       delegationMarkersRef.current = [];
+
       map.remove();
       mapRef.current = null;
       setMapReady(false);
     };
   }, []);
 
-  // Switch Map Style (Hybrid Satellite / Relief Map / Pure Satellite)
+  /* -------------------------------------------------------
+     MAP STYLE
+  ------------------------------------------------------- */
+
   useEffect(() => {
     const map = mapRef.current;
+
     if (!map || !mapReady) return;
+
     map.setStyle(getMapStyle(mapMode));
   }, [mapMode, mapReady]);
 
-  // Toggle 3D Terrain Elevation & Pitch
+  /* -------------------------------------------------------
+     3D TERRAIN
+  ------------------------------------------------------- */
+
   useEffect(() => {
     const map = mapRef.current;
+
     if (!map || !mapReady) return;
+
     try {
       if (map.getSource("terrain-dem")) {
         map.setTerrain(
-          is3DTerrain ? { source: "terrain-dem", exaggeration: 1.55 } : null,
+          is3DTerrain
+            ? { source: "terrain-dem", exaggeration: 1.55 }
+            : null,
         );
       }
     } catch {
-      // ignore if style transitioning
+      // Ignore while map style is transitioning.
     }
+
     map.easeTo({
       pitch: is3DTerrain ? 44 : 0,
       bearing: is3DTerrain ? -10 : 0,
@@ -731,68 +903,111 @@ export function GabesMapExplorer({
     });
   }, [is3DTerrain, mapReady]);
 
-  // Subtle Geographic Delegation Labels on Map
+  /* -------------------------------------------------------
+     DELEGATION MARKERS
+  ------------------------------------------------------- */
+
   useEffect(() => {
     const map = mapRef.current;
-    if (!map) return;
 
-    delegationMarkersRef.current.forEach((m) => m.remove());
+    if (!map || !mapReady) return;
+
+    delegationMarkersRef.current.forEach((marker) => marker.remove());
     delegationMarkersRef.current = [];
 
-    // Show delegation anchors that are distinct from primary photo pins or highlight selected delegation
-    const anchorDelegations = DELEGATIONS.filter((d) =>
-      ["ghannouch", "el-metouia", "mareth", "gabes-ville"].includes(d.id),
+    const anchorIds = [
+      "ghannouch",
+      "el-metouia",
+      "mareth",
+      "gabes-ville",
+    ];
+
+    const anchorDelegations = delegations.filter((delegation) =>
+      anchorIds.includes(delegation.id),
     );
 
-    anchorDelegations.forEach((del) => {
+    anchorDelegations.forEach((delegation) => {
       const btn = document.createElement("button");
+
       btn.type = "button";
-      btn.textContent = del.name[lang];
+      btn.textContent = delegation.name[lang];
+
       btn.className =
         "cursor-pointer rounded bg-[#0b1322]/75 px-2 py-0.5 text-[10px] font-medium tracking-wide text-stone-200 border border-white/20 shadow hover:bg-[#1f7d72] hover:text-white transition-colors";
+
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
-        delegationHandlerRef.current(del.id);
+        delegationHandlerRef.current(delegation.id);
       });
 
-      const marker = new maplibregl.Marker({ element: btn, anchor: "center" })
-        .setLngLat([del.center.lng, del.center.lat])
+      const marker = new maplibregl.Marker({
+        element: btn,
+        anchor: "center",
+      })
+        .setLngLat([
+          delegation.center.lng,
+          delegation.center.lat,
+        ])
         .addTo(map);
+
       delegationMarkersRef.current.push(marker);
     });
-  }, [lang]);
+  }, [delegations, lang, mapReady]);
 
-  // Render Professional Photo-Card Map Pins
+  /* -------------------------------------------------------
+     PLACE PHOTO MARKERS
+  ------------------------------------------------------- */
+
+  const handleSelectPlace = useCallback((place: PlaceStory) => {
+    goToPlace(place.slug);
+  }, []);
+
   useEffect(() => {
     const map = mapRef.current;
-    if (!map) return;
 
-    markersRef.current.forEach((m) => m.remove());
+    if (!map || !mapReady) return;
+
+    markersRef.current.forEach((marker) => marker.remove());
     markersRef.current = [];
 
     filteredPlaces.forEach((place) => {
       const isSelected = place.id === selectedPlaceId;
-      const accent = getDimensionAccent(place.dimension);
+
+      const accent = getDimensionAccent(
+        place.dimension,
+        dimensions,
+      );
 
       const wrapper = document.createElement("button");
+
       wrapper.type = "button";
       wrapper.setAttribute("aria-label", place.title[lang]);
+
       wrapper.className =
         "group relative flex flex-col items-center cursor-pointer focus:outline-none";
+
       wrapper.style.zIndex = isSelected ? "30" : "10";
 
-      // Floating Title Badge (visible on hover or active)
       const badge = document.createElement("div");
+
       badge.className =
         "mb-1.5 flex items-center gap-1.5 rounded-md bg-[#111827]/95 px-2 py-1 text-[11px] font-semibold text-white shadow-lg border border-white/20 whitespace-nowrap transition-opacity duration-150 pointer-events-none";
-      badge.style.opacity = isSelected ? "1" : "0";
-      badge.innerHTML = `
-        <span>${place.title[lang]}</span>
-        <span class="font-mono text-[10px] text-[#5eead4]">${place.elevationMeters}m</span>
-      `;
 
-      // Framed Thumbnail Pin
+      badge.style.opacity = isSelected ? "1" : "0";
+
+      // Use textContent instead of innerHTML to safely render CMS content.
+      const titleSpan = document.createElement("span");
+      titleSpan.textContent = place.title[lang];
+
+      const elevationSpan = document.createElement("span");
+      elevationSpan.className = "font-mono text-[10px] text-[#5eead4]";
+      elevationSpan.textContent = `${place.elevationMeters}m`;
+
+      badge.appendChild(titleSpan);
+      badge.appendChild(elevationSpan);
+
       const frame = document.createElement("div");
+
       frame.style.cssText = `
         width: ${isSelected ? "48px" : "40px"};
         height: ${isSelected ? "48px" : "40px"};
@@ -806,15 +1021,18 @@ export function GabesMapExplorer({
       `;
 
       const img = document.createElement("img");
+
       img.src = place.image;
       img.alt = place.title[lang];
       img.referrerPolicy = "no-referrer";
+
       img.style.cssText =
         "width: 100%; height: 100%; object-fit: cover; display: block;";
+
       frame.appendChild(img);
 
-      // Pin Stem + Anchor Dot
       const stem = document.createElement("div");
+
       stem.style.cssText = `
         width: 2px;
         height: 8px;
@@ -823,6 +1041,7 @@ export function GabesMapExplorer({
       `;
 
       const anchorDot = document.createElement("div");
+
       anchorDot.style.cssText = `
         width: 8px;
         height: 8px;
@@ -837,6 +1056,7 @@ export function GabesMapExplorer({
         frame.style.transform = "scale(1.12)";
         wrapper.style.zIndex = "40";
       });
+
       wrapper.addEventListener("mouseleave", () => {
         if (!isSelected) {
           badge.style.opacity = "0";
@@ -844,6 +1064,7 @@ export function GabesMapExplorer({
           wrapper.style.zIndex = "10";
         }
       });
+
       wrapper.addEventListener("click", (e) => {
         e.stopPropagation();
         handleSelectPlace(place);
@@ -858,21 +1079,33 @@ export function GabesMapExplorer({
         element: wrapper,
         anchor: "bottom",
       })
-        .setLngLat([place.coordinates.lng, place.coordinates.lat])
+        .setLngLat([
+          place.coordinates.lng,
+          place.coordinates.lat,
+        ])
         .addTo(map);
 
       markersRef.current.push(marker);
     });
-  }, [filteredPlaces, selectedPlaceId, lang]);
+  }, [
+    filteredPlaces,
+    selectedPlaceId,
+    dimensions,
+    lang,
+    mapReady,
+    handleSelectPlace,
+  ]);
 
-  const handleSelectPlace = (place: PlaceStory) => {
-    goToPlace(place.slug);
-  };
+  /* -------------------------------------------------------
+     DELEGATION FILTER
+  ------------------------------------------------------- */
 
   const handleDelegationChange = (delegationId: string) => {
     setSelectedDelegationId(delegationId);
     goToPlace(null);
+
     const map = mapRef.current;
+
     if (!map) return;
 
     if (delegationId === "all") {
@@ -883,13 +1116,20 @@ export function GabesMapExplorer({
         bearing: -10,
         duration: 850,
       });
+
       return;
     }
 
-    const del = DELEGATIONS.find((d) => d.id === delegationId);
-    if (del) {
+    const delegation = delegations.find(
+      (d) => d.id === delegationId,
+    );
+
+    if (delegation) {
       map.flyTo({
-        center: [del.center.lng, del.center.lat],
+        center: [
+          delegation.center.lng,
+          delegation.center.lat,
+        ],
         zoom: 12.6,
         pitch: is3DTerrain ? 46 : 18,
         duration: 900,
@@ -897,11 +1137,17 @@ export function GabesMapExplorer({
     }
   };
 
+  /* -------------------------------------------------------
+     RESET VIEW
+  ------------------------------------------------------- */
+
   const handleResetView = () => {
     goToPlace(null);
+
     setSelectedDelegationId("all");
     setSelectedDimension("all");
     setSearchQuery("");
+
     mapRef.current?.flyTo({
       center: [GABES_CENTER.lng, GABES_CENTER.lat - 0.1],
       zoom: 9.7,
@@ -911,29 +1157,42 @@ export function GabesMapExplorer({
     });
   };
 
+  /* -------------------------------------------------------
+     ACTIVE STORY
+  ------------------------------------------------------- */
+
   const activeIndex = activePlace
     ? filteredPlaces.findIndex((p) => p.id === activePlace.id)
     : -1;
 
   const handleStepStory = (direction: -1 | 1) => {
     if (filteredPlaces.length === 0) return;
+
     const baseIdx = activeIndex === -1 ? 0 : activeIndex;
+
     const nextIdx =
-      (baseIdx + direction + filteredPlaces.length) % filteredPlaces.length;
+      (baseIdx + direction + filteredPlaces.length) %
+      filteredPlaces.length;
+
     handleSelectPlace(filteredPlaces[nextIdx]);
   };
 
   const activeDelegation = activePlace
-    ? DELEGATIONS.find((d) => d.id === activePlace.delegationId)
-    : DELEGATIONS.find((d) => d.id === selectedDelegationId);
+    ? delegations.find((d) => d.id === activePlace.delegationId)
+    : delegations.find((d) => d.id === selectedDelegationId);
 
   delegationHandlerRef.current = handleDelegationChange;
 
   useEffect(() => {
     const map = mapRef.current;
+
     if (!map || !mapReady || !activePlace) return;
+
     map.flyTo({
-      center: [activePlace.coordinates.lng, activePlace.coordinates.lat],
+      center: [
+        activePlace.coordinates.lng,
+        activePlace.coordinates.lat,
+      ],
       zoom: Math.max(map.getZoom(), 13.4),
       pitch: is3DRef.current ? 50 : 24,
       bearing: -12,
@@ -946,14 +1205,44 @@ export function GabesMapExplorer({
     document.title = activePlace
       ? `${activePlace.title[lang]} — ${copy.brand}`
       : copy.brand;
+
     return () => {
       document.title = copy.brand;
     };
   }, [activePlace, lang, copy.brand]);
 
+  /* -------------------------------------------------------
+     LOADING / ERROR LABELS
+  ------------------------------------------------------- */
+
+  const loadingLabel =
+    lang === "ar"
+      ? "جاري تحميل الأماكن..."
+      : lang === "fr"
+        ? "Chargement des lieux..."
+        : "Loading places...";
+
+  const retryLabel =
+    lang === "ar"
+      ? "إعادة المحاولة"
+      : lang === "fr"
+        ? "Réessayer"
+        : "Try again";
+
+  const reloadContent = () => {
+    // Changing the language state is not required to retry.
+    // Reloading the page triggers a fresh public-content request.
+    window.location.reload();
+  };
+
+  /* -------------------------------------------------------
+     RENDER
+  ------------------------------------------------------- */
+
   return (
     <div className="flex h-full w-full flex-col bg-[#FBF9F5] text-stone-900 lg:flex-row">
       {/* Editorial Explorer / Story Panel */}
+
       <aside className="flex h-[52%] w-full flex-col border-b border-stone-200 bg-[#FBF9F5] lg:h-full lg:w-[460px] lg:shrink-0 lg:border-b-0 lg:border-e">
         {!activePlace ? (
           <>
@@ -967,14 +1256,17 @@ export function GabesMapExplorer({
                         ? "Gouvernorat de Gabès · Tunisie"
                         : "Gabès Governorate · Tunisia"}
                   </p>
+
                   <h1 className="font-display mt-0.5 text-xl sm:text-2xl font-semibold text-stone-900">
                     {copy.brand}
                   </h1>
                 </div>
+
                 <div className="flex items-center gap-2">
                   <span className="font-mono-tabular text-xs text-stone-500">
                     {copy.placesCount(filteredPlaces.length)}
                   </span>
+
                   <button
                     type="button"
                     onClick={() => setMobileFiltersOpen((v) => !v)}
@@ -983,6 +1275,7 @@ export function GabesMapExplorer({
                   >
                     <SlidersHorizontal className="h-3.5 w-3.5" />
                     <span>{mobileFiltersOpen ? "−" : "+"}</span>
+
                     <span>
                       {lang === "ar"
                         ? "تصفية"
@@ -994,13 +1287,14 @@ export function GabesMapExplorer({
                 </div>
               </div>
 
-              {/* Search + Delegation (collapsible on mobile, always visible on desktop) */}
+              {/* Search + Delegation */}
+
               <div
                 className={`${mobileFiltersOpen ? "block" : "hidden"} lg:block`}
               >
-                {/* Search */}
                 <div className="relative mt-3 sm:mt-4">
                   <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+
                   <input
                     type="search"
                     value={searchQuery}
@@ -1010,25 +1304,37 @@ export function GabesMapExplorer({
                   />
                 </div>
 
-                {/* Delegation Dropdown with place counts */}
                 <div className="mt-2.5 sm:mt-3">
-                  <label className="sr-only" htmlFor="delegation-select">
+                  <label
+                    className="sr-only"
+                    htmlFor="delegation-select"
+                  >
                     {copy.delegationLabel}
                   </label>
+
                   <select
                     id="delegation-select"
                     value={selectedDelegationId}
-                    onChange={(e) => handleDelegationChange(e.target.value)}
+                    onChange={(e) =>
+                      handleDelegationChange(e.target.value)
+                    }
                     className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-xs font-medium text-stone-800 focus:border-[#1f7d72] focus:outline-none"
                   >
                     <option value="all">
-                      {copy.allDelegations} ({PLACES.length})
+                      {copy.allDelegations} ({places.length})
                     </option>
-                    {DELEGATIONS.map((d) => {
-                      const count = placeCountByDelegation[d.id] ?? 0;
+
+                    {delegations.map((delegation) => {
+                      const count =
+                        placeCountByDelegation[delegation.id] ?? 0;
+
                       return (
-                        <option key={d.id} value={d.id}>
-                          {d.name[lang]} — {d.landscape[lang]} ({count})
+                        <option
+                          key={delegation.id}
+                          value={delegation.id}
+                        >
+                          {delegation.name[lang]} —{" "}
+                          {delegation.landscape[lang]} ({count})
                         </option>
                       );
                     })}
@@ -1036,7 +1342,8 @@ export function GabesMapExplorer({
                 </div>
               </div>
 
-              {/* 7 Cultural Dimensions: single horizontal scroll row on mobile, wrap on desktop */}
+              {/* Cultural Dimensions */}
+
               <div
                 className="mt-3 flex flex-nowrap gap-1.5 overflow-x-auto pb-1 lg:flex-wrap lg:overflow-visible lg:pb-0"
                 role="tablist"
@@ -1053,20 +1360,25 @@ export function GabesMapExplorer({
                 >
                   {copy.allDimensions}
                 </button>
-                {CULTURAL_DIMENSIONS.map((dim) => {
-                  const active = selectedDimension === dim.key;
+
+                {dimensions.map((dimension) => {
+                  const active =
+                    selectedDimension === dimension.key;
+
                   return (
                     <button
-                      key={dim.key}
+                      key={dimension.key}
                       type="button"
-                      onClick={() => setSelectedDimension(dim.key)}
+                      onClick={() =>
+                        setSelectedDimension(dimension.key)
+                      }
                       className={`rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors whitespace-nowrap shrink-0 ${
                         active
                           ? "bg-[#1f7d72] text-white"
                           : "bg-stone-200/70 text-stone-700 hover:bg-stone-200"
                       }`}
                     >
-                      {dim.label[lang]}
+                      {dimension.label[lang]}
                     </button>
                   );
                 })}
@@ -1079,6 +1391,7 @@ export function GabesMapExplorer({
                   {activeDelegation.name[lang]} ·{" "}
                   {activeDelegation.landscape[lang]}
                 </p>
+
                 <p className="mt-1 text-xs leading-relaxed text-stone-600">
                   {activeDelegation.summary[lang]}
                 </p>
@@ -1086,10 +1399,38 @@ export function GabesMapExplorer({
             )}
 
             {/* Scrollable Places List */}
+
             <div className="gabes-scroll flex-1 overflow-y-auto overscroll-contain p-5">
-              {filteredPlaces.length === 0 ? (
+              {contentLoading ? (
+                <div className="flex h-full min-h-40 items-center justify-center">
+                  <div className="text-center">
+                    <div className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-stone-300 border-t-[#1f7d72]" />
+
+                    <p className="mt-3 text-sm text-stone-500">
+                      {loadingLabel}
+                    </p>
+                  </div>
+                </div>
+              ) : contentError ? (
                 <div className="py-12 text-center">
-                  <p className="text-sm text-stone-600">{copy.noResults}</p>
+                  <p className="text-sm text-red-700">
+                    {contentError}
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={reloadContent}
+                    className="mt-3 rounded-lg border border-stone-300 px-3.5 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-100"
+                  >
+                    {retryLabel}
+                  </button>
+                </div>
+              ) : filteredPlaces.length === 0 ? (
+                <div className="py-12 text-center">
+                  <p className="text-sm text-stone-600">
+                    {copy.noResults}
+                  </p>
+
                   <button
                     type="button"
                     onClick={handleResetView}
@@ -1101,9 +1442,10 @@ export function GabesMapExplorer({
               ) : (
                 <div className="space-y-3 sm:space-y-4">
                   {filteredPlaces.map((place) => {
-                    const delegation = DELEGATIONS.find(
+                    const delegation = delegations.find(
                       (d) => d.id === place.delegationId,
                     );
+
                     return (
                       <article
                         key={place.id}
@@ -1112,7 +1454,10 @@ export function GabesMapExplorer({
                         className="group cursor-pointer rounded-xl border border-stone-200 bg-white p-3.5 transition-colors hover:border-stone-400 focus-visible:outline-2 focus-visible:outline-[#1f7d72]"
                         onClick={() => handleSelectPlace(place)}
                         onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
+                          if (
+                            e.key === "Enter" ||
+                            e.key === " "
+                          ) {
                             e.preventDefault();
                             handleSelectPlace(place);
                           }
@@ -1127,24 +1472,36 @@ export function GabesMapExplorer({
                               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                             />
                           </div>
+
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1.5 text-[11px] text-stone-500">
                               <span
                                 className="font-semibold"
                                 style={{
-                                  color: getDimensionAccent(place.dimension),
+                                  color: getDimensionAccent(
+                                    place.dimension,
+                                    dimensions,
+                                  ),
                                 }}
                               >
-                                {getDimensionLabel(place.dimension, lang)}
+                                {getDimensionLabel(
+                                  place.dimension,
+                                  lang,
+                                  dimensions,
+                                )}
                               </span>
+
                               <span aria-hidden="true">·</span>
+
                               <span className="truncate">
                                 {delegation?.name[lang]}
                               </span>
                             </div>
+
                             <h2 className="font-display mt-0.5 truncate text-lg font-semibold text-stone-900">
                               {place.title[lang]}
                             </h2>
+
                             <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-stone-600">
                               {place.summary[lang]}
                             </p>
@@ -1158,7 +1515,8 @@ export function GabesMapExplorer({
             </div>
           </>
         ) : (
-          /* 05. Discover Stories — Editorial Reader View */
+          /* Story Reader */
+
           <div className="flex h-full flex-col">
             <div className="flex items-center justify-between border-b border-stone-200 px-5 py-3.5">
               <button
@@ -1178,6 +1536,7 @@ export function GabesMapExplorer({
                 >
                   {copy.previousStory}
                 </button>
+
                 <button
                   type="button"
                   onClick={() => handleStepStory(1)}
@@ -1208,13 +1567,26 @@ export function GabesMapExplorer({
               <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-stone-500">
                 <span
                   className="font-semibold"
-                  style={{ color: getDimensionAccent(activePlace.dimension) }}
+                  style={{
+                    color: getDimensionAccent(
+                      activePlace.dimension,
+                      dimensions,
+                    ),
+                  }}
                 >
-                  {getDimensionLabel(activePlace.dimension, lang)}
+                  {getDimensionLabel(
+                    activePlace.dimension,
+                    lang,
+                    dimensions,
+                  )}
                 </span>
+
                 <span aria-hidden="true">·</span>
+
                 <span>{activeDelegation?.name[lang]}</span>
+
                 <span aria-hidden="true">·</span>
+
                 <span className="font-mono-tabular">
                   {activePlace.coordinates.lat.toFixed(4)}° N,{" "}
                   {activePlace.coordinates.lng.toFixed(4)}° E
@@ -1227,6 +1599,7 @@ export function GabesMapExplorer({
               >
                 {activePlace.title[lang]}
               </h2>
+
               <p className="mt-1.5 text-sm font-medium text-stone-600">
                 {activePlace.subtitle[lang]}
               </p>
@@ -1247,6 +1620,7 @@ export function GabesMapExplorer({
                 <h3 className="text-xs font-semibold uppercase tracking-widest text-stone-500">
                   {copy.storyHistory}
                 </h3>
+
                 <p className="mt-2 text-sm leading-relaxed text-stone-700">
                   {activePlace.storyBody[lang]}
                 </p>
@@ -1256,6 +1630,7 @@ export function GabesMapExplorer({
                 <h3 className="text-xs font-semibold uppercase tracking-widest text-stone-500">
                   {copy.culturalIdentity}
                 </h3>
+
                 <p className="mt-2 text-sm leading-relaxed text-stone-700">
                   {activePlace.culturalNote[lang]}
                 </p>
@@ -1265,6 +1640,7 @@ export function GabesMapExplorer({
                 <h3 className="text-xs font-semibold uppercase tracking-widest text-stone-500">
                   {copy.localLifeHeading}
                 </h3>
+
                 <p className="mt-2 text-sm leading-relaxed text-stone-700">
                   {activePlace.localLife[lang]}
                 </p>
@@ -1274,27 +1650,43 @@ export function GabesMapExplorer({
                 <h3 className="text-xs font-semibold uppercase tracking-widest text-stone-500">
                   {copy.visitingInfoHeading}
                 </h3>
+
                 <dl className="mt-3 divide-y divide-stone-100 text-xs">
                   <div className="flex justify-between gap-4 py-2">
-                    <dt className="text-stone-500">{copy.bestSeasonLabel}</dt>
+                    <dt className="text-stone-500">
+                      {copy.bestSeasonLabel}
+                    </dt>
+
                     <dd className="text-end font-medium text-stone-900">
                       {activePlace.visitingInfo.bestSeason[lang]}
                     </dd>
                   </div>
+
                   <div className="flex justify-between gap-4 py-2">
-                    <dt className="text-stone-500">{copy.accessLabel}</dt>
+                    <dt className="text-stone-500">
+                      {copy.accessLabel}
+                    </dt>
+
                     <dd className="text-end font-medium text-stone-900">
                       {activePlace.visitingInfo.access[lang]}
                     </dd>
                   </div>
+
                   <div className="flex justify-between gap-4 py-2">
-                    <dt className="text-stone-500">{copy.highlightLabel}</dt>
+                    <dt className="text-stone-500">
+                      {copy.highlightLabel}
+                    </dt>
+
                     <dd className="text-end font-medium text-stone-900">
                       {activePlace.visitingInfo.highlight[lang]}
                     </dd>
                   </div>
+
                   <div className="flex justify-between gap-4 py-2">
-                    <dt className="text-stone-500">{copy.elevationLabel}</dt>
+                    <dt className="text-stone-500">
+                      {copy.elevationLabel}
+                    </dt>
+
                     <dd className="font-mono-tabular text-end font-medium text-stone-900">
                       {activePlace.elevationMeters} m
                     </dd>
@@ -1306,11 +1698,13 @@ export function GabesMapExplorer({
         )}
       </aside>
 
-      {/* Main MapLibre Interactive 3D Satellite Viewport */}
+      {/* Main MapLibre Interactive Viewport */}
+
       <div className="relative h-[48%] flex-1 lg:h-full">
         <div ref={mapContainerRef} className="h-full w-full" />
 
         {/* Floating Map Controls */}
+
         <div className="pointer-events-none absolute inset-x-4 top-4 z-10 flex flex-wrap items-center justify-between gap-2">
           <button
             type="button"
@@ -1334,6 +1728,7 @@ export function GabesMapExplorer({
               <Layers className="h-3.5 w-3.5" />
               <span>{copy.layerHybrid}</span>
             </button>
+
             <button
               type="button"
               onClick={() => setMapMode("map")}
@@ -1346,6 +1741,7 @@ export function GabesMapExplorer({
               <MapPin className="h-3.5 w-3.5" />
               <span>{copy.layerMap}</span>
             </button>
+
             <button
               type="button"
               onClick={() => setMapMode("satellite")}
@@ -1358,7 +1754,12 @@ export function GabesMapExplorer({
               <Compass className="h-3.5 w-3.5" />
               <span>{copy.layerSatellite}</span>
             </button>
-            <span className="h-4 w-px bg-stone-300" aria-hidden="true" />
+
+            <span
+              className="h-4 w-px bg-stone-300"
+              aria-hidden="true"
+            />
+
             <button
               type="button"
               onClick={() => setIs3DTerrain((v) => !v)}
@@ -1371,6 +1772,7 @@ export function GabesMapExplorer({
               <Mountain className="h-3.5 w-3.5" />
               <span>{copy.tilt3D}</span>
             </button>
+
             <button
               type="button"
               onClick={handleResetView}
@@ -1378,24 +1780,33 @@ export function GabesMapExplorer({
               className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-200/70 whitespace-nowrap shrink-0"
             >
               <RotateCcw className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">{copy.resetView}</span>
+              <span className="hidden sm:inline">
+                {copy.resetView}
+              </span>
             </button>
           </div>
         </div>
 
-        {/* Bottom-Left Quick Story Stepper on Map */}
-        {!activePlace && filteredPlaces.length > 0 && (
-          <div className="pointer-events-none absolute bottom-4 start-4 z-10 hidden sm:block">
-            <button
-              type="button"
-              onClick={() => handleSelectPlace(filteredPlaces[0])}
-              className="pointer-events-auto inline-flex items-center gap-2 rounded-lg border border-stone-300 bg-[#FBF9F5]/95 px-3.5 py-2 text-xs font-semibold text-stone-900 shadow-md transition-colors hover:bg-white"
-            >
-              <span>{filteredPlaces[0].title[lang]}</span>
-              <ArrowRight className="h-3.5 w-3.5 text-[#1f7d72] rtl:rotate-180" />
-            </button>
-          </div>
-        )}
+        {/* Bottom-left Quick Story Stepper */}
+
+        {!activePlace &&
+          !contentLoading &&
+          !contentError &&
+          filteredPlaces.length > 0 && (
+            <div className="pointer-events-none absolute bottom-4 start-4 z-10 hidden sm:block">
+              <button
+                type="button"
+                onClick={() =>
+                  handleSelectPlace(filteredPlaces[0])
+                }
+                className="pointer-events-auto inline-flex items-center gap-2 rounded-lg border border-stone-300 bg-[#FBF9F5]/95 px-3.5 py-2 text-xs font-semibold text-stone-900 shadow-md transition-colors hover:bg-white"
+              >
+                <span>{filteredPlaces[0].title[lang]}</span>
+
+                <ArrowRight className="h-3.5 w-3.5 text-[#1f7d72] rtl:rotate-180" />
+              </button>
+            </div>
+          )}
       </div>
     </div>
   );
