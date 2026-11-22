@@ -64,6 +64,22 @@ function PublicApp() {
   useEffect(() => {
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+
+    const titles: Record<Language, string> = {
+      en: "WE ARE GABÈS — Discover Gabès",
+      ar: "نحن قابس — اكتشف ولاية قابس",
+      fr: "WE ARE GABÈS — Découvrez Gabès",
+    };
+    const descriptions: Record<Language, string> = {
+      en: "Explore Gabès through places, delegations, cultural stories and interactive maps.",
+      ar: "اكتشف ولاية قابس من خلال الأماكن والمعتمديات والقصص الثقافية والخرائط التفاعلية.",
+      fr: "Explorez Gabès à travers ses lieux, délégations, histoires culturelles et cartes interactives.",
+    };
+
+    document.title = titles[lang];
+    document
+      .querySelector('meta[name="description"]')
+      ?.setAttribute("content", descriptions[lang]);
   }, [lang]);
 
   const handleOpenDimension = (dim: DimensionKey) => {
@@ -73,7 +89,7 @@ function PublicApp() {
 
   return (
     <div className="flex h-dvh w-screen flex-col overflow-hidden bg-[#060b14]">
-      <header className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 bg-[#060b14] px-3 py-2 text-stone-100 sm:gap-8 sm:px-6">
+      <header className="public-header flex shrink-0 items-center justify-between gap-3 border-b border-white/10 bg-[#060b14] px-3 py-2 text-stone-100 sm:gap-8 sm:px-6">
         <button
           type="button"
           onClick={() => setView("globe")}

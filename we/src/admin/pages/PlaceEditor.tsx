@@ -73,6 +73,14 @@ interface GalleryItem {
 }
 
 const BUCKET_NAME = 'gabes-media';
+const ALLOWED_IMAGE_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'image/avif',
+]);
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 
 const emptyTranslation: TranslationForm = {
   title: '',
@@ -243,8 +251,13 @@ export default function PlaceEditor({
       return;
     }
 
-    if (!file.type.startsWith('image/')) {
-      setError('Please select a valid image file.');
+    if (
+      !ALLOWED_IMAGE_TYPES.has(file.type) ||
+      file.size > MAX_UPLOAD_BYTES
+    ) {
+      setError(
+        'Please select a JPEG, PNG, WebP, GIF or AVIF image up to 10 MB.',
+      );
       return;
     }
 
@@ -777,6 +790,7 @@ export default function PlaceEditor({
     setError(null);
     setSuccess(false);
 
+    const isCreating = !placeId;
     let saveStage = 'saving place record';
 
     try {
@@ -832,6 +846,20 @@ export default function PlaceEditor({
       setSuccess(true);
     } catch (err) {
       console.error(`Place editor: ${saveStage} failed:`, err);
+
+      if (isCreating) {
+        try {
+          const { error: cleanupError } = await supabase
+            .from('places')
+            .delete()
+            .eq('id', identifier);
+          if (cleanupError) throw cleanupError;
+        } catch {
+          // The original save error is more useful to the editor than a
+          // secondary cleanup failure.
+        }
+      }
+
       setError(
         `Save failed while ${saveStage}: ${getErrorMessage(err)}. Some earlier changes may already have been saved; review the place before retrying.`,
       );
@@ -1119,6 +1147,9 @@ export default function PlaceEditor({
                     <img
                       src={mainImageMedia.url}
                       alt="Main image preview"
+                      onError={(event) => {
+                        event.currentTarget.style.display = 'none';
+                      }}
                       style={{
                         width: '100%',
                         maxWidth: 280,
@@ -1473,6 +1504,9 @@ export default function PlaceEditor({
                       <img
                         src={media.url}
                         alt={`Gallery image ${index + 1}`}
+                        onError={(event) => {
+                          event.currentTarget.style.display = 'none';
+                        }}
                         style={{
                           width: '100%',
                           maxWidth: 360,

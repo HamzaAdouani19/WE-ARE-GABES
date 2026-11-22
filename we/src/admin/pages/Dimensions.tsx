@@ -47,6 +47,16 @@ const locales: { key: Locale; label: string }[] = [
   { key: 'fr', label: 'Français' },
 ];
 
+const ALLOWED_DIMENSION_KEYS = new Set([
+  'geography',
+  'nature',
+  'culture',
+  'heritage',
+  'experiences',
+  'local_life',
+  'stories',
+]);
+
 export default function Dimensions() {
   const [dimensions, setDimensions] = useState<CulturalDimension[]>([]);
   const [selected, setSelected] = useState<CulturalDimension | null>(null);
@@ -122,6 +132,13 @@ export default function Dimensions() {
 
     if (!selected.key.trim()) {
       setError('Please enter a dimension key.');
+      return;
+    }
+
+    if (!ALLOWED_DIMENSION_KEYS.has(selected.key.trim().toLowerCase())) {
+      setError(
+        'Dimension key must be one of: geography, nature, culture, heritage, experiences, local_life, stories.',
+      );
       return;
     }
 

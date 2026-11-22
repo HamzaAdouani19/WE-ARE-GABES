@@ -2,5 +2,4 @@
   "name": "WE ARE GABÈS",
   "description": "WE ARE GABÈS — Every place has a story. Interactive 3D geographic and cultural identity platform for Gabès Governorate, Tunisia.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

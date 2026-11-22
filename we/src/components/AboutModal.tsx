@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { CULTURAL_DIMENSIONS, UI_COPY } from "../data/gabesData";
 import type { DimensionKey, Language } from "../types/gabes";
@@ -18,13 +18,25 @@ export function AboutModal({
   onClose,
   onSelectDimension,
 }: AboutModalProps) {
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
   useEffect(() => {
     if (!open) return;
+    previousFocusRef.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    closeButtonRef.current?.focus();
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
     };
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      previousFocusRef.current?.focus();
+    };
   }, [open, onClose]);
 
   if (!open) return null;
@@ -53,6 +65,7 @@ export function AboutModal({
           </div>
           <button
             type="button"
+            ref={closeButtonRef}
             onClick={onClose}
             aria-label={copy.close}
             className="rounded-lg border border-stone-300 p-2 text-stone-600 transition-colors hover:bg-stone-200/70 hover:text-stone-900"

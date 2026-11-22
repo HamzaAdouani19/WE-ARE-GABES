@@ -27,6 +27,15 @@ interface MediaFile {
   publicUrl: string;
 }
 
+const ALLOWED_IMAGE_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'image/avif',
+]);
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+
 export default function MediaLibrary() {
   const [files, setFiles] = useState<MediaFile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -47,22 +56,38 @@ export default function MediaLibrary() {
     setIsLoading(true);
     setError('');
 
-    const { data, error: listError } = await client.storage
-      .from(BUCKET_NAME)
-      .list('', {
-        limit: 100,
-        offset: 0,
-        sortBy: { column: 'created_at', order: 'desc' },
-      });
+    const allFiles: Array<{
+      name: string;
+      id: string | null;
+      created_at: string | null;
+      updated_at: string | null;
+      metadata: { size?: number; mimetype?: string } | null;
+    }> = [];
+    let offset = 0;
+    const pageSize = 100;
 
-    if (listError) {
-      setError(listError.message);
-      setFiles([]);
-      setIsLoading(false);
-      return;
+    while (true) {
+      const { data: page, error: listError } = await client.storage
+        .from(BUCKET_NAME)
+        .list('', {
+          limit: pageSize,
+          offset,
+          sortBy: { column: 'created_at', order: 'desc' },
+        });
+
+      if (listError) {
+        setError(listError.message);
+        setFiles([]);
+        setIsLoading(false);
+        return;
+      }
+
+      allFiles.push(...(page ?? []));
+      if (!page || page.length < pageSize) break;
+      offset += pageSize;
     }
 
-    const mediaFiles: MediaFile[] = (data ?? [])
+    const mediaFiles: MediaFile[] = allFiles
       .filter(
         (file): file is typeof file & { id: string; name: string } =>
           Boolean(file.id && file.name),
@@ -98,11 +123,15 @@ export default function MediaLibrary() {
     if (!supabase || selectedFiles.length === 0) return;
 
     const invalidFiles = selectedFiles.filter(
-      (file) => !file.type.startsWith('image/'),
+      (file) =>
+        !ALLOWED_IMAGE_TYPES.has(file.type) ||
+        file.size > MAX_UPLOAD_BYTES,
     );
 
     if (invalidFiles.length > 0) {
-      setError('Only image files are allowed.');
+      setError(
+        'Only JPEG, PNG, WebP, GIF or AVIF images up to 10 MB are allowed.',
+      );
       return;
     }
 
@@ -163,6 +192,43 @@ export default function MediaLibrary() {
     setDeletingPath(path);
     setError('');
     setSuccess('');
+
+    try {
+      const [mainImageResult, galleryResult] = await Promise.all([
+        supabase
+          .from('places')
+          .select('id')
+          .or(`main_image.eq.${path},main_image.eq.gabes-media/${path}`)
+          .limit(1),
+        supabase
+          .from('place_gallery')
+          .select('id')
+          .or(`image_path.eq.${path},image_path.eq.gabes-media/${path}`)
+          .limit(1),
+      ]);
+
+      if (mainImageResult.error) throw mainImageResult.error;
+      if (galleryResult.error) throw galleryResult.error;
+
+      if (
+        (mainImageResult.data?.length ?? 0) > 0 ||
+        (galleryResult.data?.length ?? 0) > 0
+      ) {
+        setDeletingPath(null);
+        setError(
+          'This image is still referenced by a place or gallery and cannot be deleted.',
+        );
+        return;
+      }
+    } catch (err) {
+      setDeletingPath(null);
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Unable to verify image references.',
+      );
+      return;
+    }
 
     const { error: deleteError } = await supabase.storage
       .from(BUCKET_NAME)

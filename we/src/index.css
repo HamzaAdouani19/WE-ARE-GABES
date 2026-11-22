@@ -65,3 +65,80 @@ html[dir="rtl"] .font-display {
 .gabes-scroll::-webkit-scrollbar-thumb:hover {
   background: rgba(120, 113, 108, 0.45);
 }
+
+/* Professional public-shell refinement */
+@media (min-width: 641px) {
+  .public-header {
+    min-height: 68px;
+    background: rgba(6, 11, 20, 0.96) !important;
+    backdrop-filter: blur(16px);
+  }
+}
+
+.public-header nav button {
+  min-height: 36px;
+  border-radius: 8px;
+  padding-inline: 8px;
+  transition: color 160ms ease, background 160ms ease;
+}
+
+.public-header nav button:hover {
+  background: rgba(255, 255, 255, 0.055);
+  text-decoration: none;
+}
+
+.public-header [role="group"] {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+.public-header [role="group"] button {
+  min-width: 34px;
+  min-height: 30px;
+  padding-inline: 7px;
+}
+
+@media (max-width: 640px) {
+  .public-header {
+    min-height: 58px;
+  }
+
+  .public-header nav {
+    max-width: calc(100vw - 206px);
+  }
+
+  .public-header nav button {
+    padding-inline: 5px;
+  }
+
+  .public-header [role="group"] button {
+    min-width: 28px;
+    padding-inline: 5px;
+  }
+}
+
+.public-explorer-panel {
+  box-shadow: 10px 0 30px rgba(15, 23, 42, 0.035);
+  z-index: 2;
+}
+
+.public-explorer-panel [type="search"] {
+  min-height: 42px;
+}
+
+.public-explorer-panel [role="tablist"] button {
+  min-height: 34px;
+  border-radius: 8px;
+  padding-inline: 11px;
+}
+
+.public-explorer-panel [role="tablist"] button[aria-selected="true"],
+.public-explorer-panel [role="tablist"] button.bg-stone-900 {
+  box-shadow: 0 5px 14px rgba(28, 25, 23, 0.12);
+}
+
+@media (max-width: 1023px) {
+  .public-explorer-panel {
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+  }
+}
