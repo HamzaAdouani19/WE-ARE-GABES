@@ -7,6 +7,8 @@ import {
   ExternalLink,
   Plus,
   Pencil,
+  Trash2,
+  LoaderCircle,
 } from 'lucide-react';
 
 import { supabase } from '../../lib/supabase';
@@ -37,6 +39,7 @@ export default function Places({ onCreate, onEdit }: PlacesProps) {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] =
     useState<StatusFilter>('all');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const loadPlaces = useCallback(async () => {
     if (!supabase) {
@@ -72,6 +75,63 @@ export default function Places({ onCreate, onEdit }: PlacesProps) {
   useEffect(() => {
     void loadPlaces();
   }, [loadPlaces]);
+
+  const handleDelete = async (place: Place) => {
+    if (!supabase) {
+      setError('Supabase is not configured.');
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Are you sure you want to permanently delete "${place.slug}" (${place.id})?\n\nThis will delete the place, its translations and gallery records.\n\nStorage images will NOT be deleted.\n\nThis action cannot be undone.`,
+    );
+
+    if (!confirmed) return;
+
+    setDeletingId(place.id);
+    setError(null);
+
+    try {
+      // 1. Delete translations.
+      const { error: translationsError } = await supabase
+        .from('place_translations')
+        .delete()
+        .eq('place_id', place.id);
+
+      if (translationsError) throw translationsError;
+
+      // 2. Delete gallery database records.
+      const { error: galleryError } = await supabase
+        .from('place_gallery')
+        .delete()
+        .eq('place_id', place.id);
+
+      if (galleryError) throw galleryError;
+
+      // 3. Delete the place itself.
+      const { error: placeError } = await supabase
+        .from('places')
+        .delete()
+        .eq('id', place.id);
+
+      if (placeError) throw placeError;
+
+      setPlaces((current) =>
+        current.filter((item) => item.id !== place.id),
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? `Unable to delete place: ${err.message}`
+          : 'Unable to delete place.',
+      );
+
+      // Reload to reflect the actual database state.
+      void loadPlaces();
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const filteredPlaces = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -113,7 +173,7 @@ export default function Places({ onCreate, onEdit }: PlacesProps) {
             type="button"
             className="admin-secondary-button"
             onClick={() => void loadPlaces()}
-            disabled={loading}
+            disabled={loading || deletingId !== null}
           >
             <RefreshCw
               size={16}
@@ -126,6 +186,7 @@ export default function Places({ onCreate, onEdit }: PlacesProps) {
             type="button"
             className="admin-primary-button"
             onClick={onCreate}
+            disabled={deletingId !== null}
           >
             <Plus size={17} />
             Add place
@@ -262,10 +323,29 @@ export default function Places({ onCreate, onEdit }: PlacesProps) {
                         type="button"
                         className="admin-icon-button"
                         onClick={() => onEdit(place.id)}
+                        disabled={deletingId !== null}
                         aria-label={`Edit ${place.slug}`}
                         title="Edit place"
                       >
                         <Pencil size={16} />
+                      </button>
+
+                      <button
+                        type="button"
+                        className="admin-icon-button admin-delete-button"
+                        onClick={() => void handleDelete(place)}
+                        disabled={deletingId !== null}
+                        aria-label={`Delete ${place.slug}`}
+                        title="Delete place"
+                      >
+                        {deletingId === place.id ? (
+                          <LoaderCircle
+                            size={16}
+                            className="admin-spin"
+                          />
+                        ) : (
+                          <Trash2 size={16} />
+                        )}
                       </button>
                     </td>
                   </tr>
