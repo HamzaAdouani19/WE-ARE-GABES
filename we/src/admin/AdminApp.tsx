@@ -63,7 +63,9 @@ function AdminContent() {
   const renderSection = () => {
     switch (activeSection) {
       case "overview":
-        return <Overview />;
+        return (
+          <Overview onOpenPlaces={() => setActiveSection("places")} />
+        );
 
       case "places":
         return <Places onCreate={openCreatePlace} onEdit={openEditPlace} />;
@@ -92,7 +94,9 @@ function AdminContent() {
         return <Settings />;
 
       default:
-        return <Overview />;
+        return (
+          <Overview onOpenPlaces={() => setActiveSection("places")} />
+        );
     }
   };
 

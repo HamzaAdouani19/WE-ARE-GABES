@@ -1,242 +1,214 @@
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
+  Activity,
+  Compass,
+  FileText,
   MapPin,
-  Globe,
-  Images,
-  BookOpen,
   RefreshCw,
-  ArrowUpRight,
+  Tags,
 } from 'lucide-react';
 
 import { supabase } from '../../lib/supabase';
 
-interface DashboardStats {
-  places: number;
-  publishedPlaces: number;
-  translations: number;
-  media: number;
-}
+export default function Overview({
+  onOpenPlaces,
+}: {
+  onOpenPlaces: () => void;
+}) {
+  const [stats, setStats] = useState({
+    places: 0,
+    published: 0,
+    drafts: 0,
+    delegations: 0,
+    dimensions: 0,
+  });
 
-const initialStats: DashboardStats = {
-  places: 0,
-  publishedPlaces: 0,
-  translations: 0,
-  media: 0,
-};
-
-export default function Overview() {
-  const [stats, setStats] = useState(initialStats);
-  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const loadStats = useCallback(async () => {
-    if (!supabase) {
-      setError('Supabase is not configured.');
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const [
-        placesResult,
-        publishedResult,
-        translationsResult,
-        mediaResult,
-      ] = await Promise.all([
-        supabase
-          .from('places')
-          .select('*', { count: 'exact', head: true }),
-
-        supabase
-          .from('places')
-          .select('*', { count: 'exact', head: true })
-          .eq('publication_status', 'published'),
-
-        supabase
-          .from('place_translations')
-          .select('*', { count: 'exact', head: true }),
-
-        supabase
-          .from('place_gallery')
-          .select('*', { count: 'exact', head: true }),
-      ]);
-
-      const results = [
-        placesResult,
-        publishedResult,
-        translationsResult,
-        mediaResult,
-      ];
-
-      const failedResult = results.find((result) => result.error);
-
-      if (failedResult?.error) {
-        throw failedResult.error;
-      }
-
-      setStats({
-        places: placesResult.count ?? 0,
-        publishedPlaces: publishedResult.count ?? 0,
-        translations: translationsResult.count ?? 0,
-        media: mediaResult.count ?? 0,
-      });
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'Unable to load dashboard statistics.',
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
-    void loadStats();
-  }, [loadStats]);
+    let active = true;
+
+    async function loadStatistics() {
+      if (!supabase) {
+        setError('Supabase is not configured. Check your environment variables.');
+        setBusy(false);
+        return;
+      }
+
+      setBusy(true);
+      setError(null);
+
+      try {
+        const [
+          placesResult,
+          publishedResult,
+          draftsResult,
+          delegationsResult,
+          dimensionsResult,
+        ] = await Promise.all([
+          supabase
+            .from('places')
+            .select('id', { count: 'exact', head: true }),
+
+          supabase
+            .from('places')
+            .select('id', { count: 'exact', head: true })
+            .eq('publication_status', 'published'),
+
+          supabase
+            .from('places')
+            .select('id', { count: 'exact', head: true })
+            .eq('publication_status', 'draft'),
+
+          supabase
+            .from('delegations')
+            .select('id', { count: 'exact', head: true }),
+
+          supabase
+            .from('cultural_dimensions')
+            .select('key', { count: 'exact', head: true }),
+        ]);
+
+        if (!active) return;
+
+        const errors = [
+          { table: 'places', error: placesResult.error },
+          { table: 'published places', error: publishedResult.error },
+          { table: 'draft places', error: draftsResult.error },
+          { table: 'delegations', error: delegationsResult.error },
+          { table: 'cultural_dimensions', error: dimensionsResult.error },
+        ].filter((item) => item.error !== null);
+
+        setStats({
+          places: placesResult.count ?? 0,
+          published: publishedResult.count ?? 0,
+          drafts: draftsResult.count ?? 0,
+          delegations: delegationsResult.count ?? 0,
+          dimensions: dimensionsResult.count ?? 0,
+        });
+
+        if (errors.length > 0) {
+          setError(
+            errors
+              .map(
+                (item) =>
+                  `${item.table}: ${item.error?.message ?? 'Unknown error'}`,
+              )
+              .join(' | '),
+          );
+        }
+      } catch (err) {
+        if (!active) return;
+
+        setError(
+          err instanceof Error
+            ? err.message
+            : 'Unexpected error while loading dashboard statistics.',
+        );
+      } finally {
+        if (active) setBusy(false);
+      }
+    }
+
+    void loadStatistics();
+
+    return () => {
+      active = false;
+    };
+  }, [reloadKey]);
 
   const cards = [
-    {
-      label: 'Total Places',
-      value: stats.places,
-      icon: MapPin,
-      description: 'All registered places',
-    },
-    {
-      label: 'Published Places',
-      value: stats.publishedPlaces,
-      icon: Globe,
-      description: 'Visible on the public website',
-    },
-    {
-      label: 'Translations',
-      value: stats.translations,
-      icon: BookOpen,
-      description: 'Available language entries',
-    },
-    {
-      label: 'Gallery Images',
-      value: stats.media,
-      icon: Images,
-      description: 'Images linked to places',
-    },
+    { label: 'Total places', value: stats.places, icon: MapPin },
+    { label: 'Published', value: stats.published, icon: Activity },
+    { label: 'Drafts', value: stats.drafts, icon: FileText },
+    { label: 'Delegations', value: stats.delegations, icon: Compass },
+    { label: 'Dimensions', value: stats.dimensions, icon: Tags },
   ];
 
   return (
-    <div className="admin-overview">
+    <>
       <div className="admin-page-heading">
         <div>
-          <span className="admin-eyebrow">YOUR WORKSPACE</span>
-          <h2>Good to see you.</h2>
-          <p>
-            Here's an overview of your WE ARE GABÈS content.
+          <p className="admin-eyebrow">YOUR REGION, YOUR STORIES</p>
+          <h1>Overview</h1>
+          <p className="admin-muted">
+            A clear view of the content powering your digital destination.
           </p>
         </div>
 
-        <button
-          type="button"
-          className="admin-secondary-button"
-          onClick={() => void loadStats()}
-          disabled={loading}
-        >
-          <RefreshCw
-            size={16}
-            className={loading ? 'admin-spin' : ''}
-          />
-          Refresh
-        </button>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            className="admin-secondary-btn compact"
+            onClick={() => setReloadKey((current) => current + 1)}
+            disabled={busy}
+          >
+            <RefreshCw
+              size={15}
+              className={busy ? 'admin-spin' : ''}
+            />
+            {busy ? 'Loading...' : 'Refresh'}
+          </button>
+
+          <button
+            type="button"
+            className="admin-secondary-btn compact"
+            onClick={onOpenPlaces}
+          >
+            Manage content <span>→</span>
+          </button>
+        </div>
       </div>
 
       {error && (
         <div className="admin-error-message" role="alert">
-          {error}
+          <strong>Unable to load all dashboard statistics.</strong>
+          <p>{error}</p>
+          <button
+            type="button"
+            className="admin-secondary-btn compact"
+            onClick={() => setReloadKey((current) => current + 1)}
+            disabled={busy}
+          >
+            Try again
+          </button>
         </div>
       )}
 
-      <section className="admin-stats-grid">
-        {cards.map((card) => {
-          const Icon = card.icon;
-
-          return (
-            <article className="admin-stat-card" key={card.label}>
-              <div className="admin-stat-card-top">
-                <span>{card.label}</span>
-                <div className="admin-stat-icon">
-                  <Icon size={19} strokeWidth={1.7} />
-                </div>
-              </div>
-
-              <strong className="admin-stat-value">
-                {loading ? '—' : card.value.toLocaleString()}
-              </strong>
-
-              <span className="admin-stat-description">
-                {card.description}
-              </span>
-            </article>
-          );
-        })}
-      </section>
-
-      <section className="admin-overview-bottom">
-        <article className="admin-welcome-card">
-          <div>
-            <span className="admin-eyebrow">THE DIGITAL EXPERIENCE</span>
-            <h3>Discover the stories of Gabès.</h3>
-            <p>
-              Manage the places, stories and cultural dimensions
-              that make Gabès unique.
-            </p>
-          </div>
-
-          <div className="admin-welcome-decoration">WG</div>
-        </article>
-
-        <article className="admin-quick-info">
-          <div className="admin-quick-info-heading">
-            <div>
-              <span className="admin-eyebrow">CONTENT STATUS</span>
-              <h3>Publishing overview</h3>
-            </div>
-            <ArrowUpRight size={18} />
-          </div>
-
-          <div className="admin-progress-row">
-            <div className="admin-progress-label">
-              <span>Published places</span>
-              <strong>
-                {loading
-                  ? '—'
-                  : `${stats.publishedPlaces} / ${stats.places}`}
-              </strong>
+      <div className="admin-stats-grid">
+        {cards.map(({ label, value, icon: Icon }) => (
+          <div className="admin-stat-card" key={label}>
+            <div className="admin-stat-top">
+              <span>{label}</span>
+              <Icon size={18} />
             </div>
 
-            <div className="admin-progress-track">
-              <div
-                className="admin-progress-fill"
-                style={{
-                  width: `${
-                    stats.places > 0
-                      ? Math.min(
-                          (stats.publishedPlaces / stats.places) * 100,
-                          100,
-                        )
-                      : 0
-                  }%`,
-                }}
-              />
-            </div>
-          </div>
+            <strong>{busy ? '—' : value}</strong>
 
-          <p className="admin-quick-info-note">
-            Only published places are displayed on the public website.
+            <span className="admin-stat-note">
+              Live database count
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <div className="admin-panel admin-welcome-panel">
+        <div className="admin-welcome-icon">
+          <Compass size={22} />
+        </div>
+
+        <div>
+          <h2>Welcome to your content studio</h2>
+          <p>
+            Manage places, stories, imagery and translations from one
+            private workspace. Your public website remains a separate
+            experience.
           </p>
-        </article>
-      </section>
-    </div>
+        </div>
+      </div>
+    </>
   );
 }
