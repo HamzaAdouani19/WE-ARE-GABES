@@ -19,6 +19,35 @@ const LANG_OPTIONS: Array<{ code: Language; label: string }> = [
   { code: "fr", label: "FR" },
 ];
 
+const LANGUAGE_STORAGE_KEY = "we-are-gabes-language";
+
+function isLanguage(value: string | null): value is Language {
+  return value === "en" || value === "ar" || value === "fr";
+}
+
+function getInitialLanguage(): Language {
+  try {
+    const savedLanguage = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
+    if (isLanguage(savedLanguage)) return savedLanguage;
+  } catch {
+    // Storage may be disabled by the browser.
+  }
+
+  const browserLanguages =
+    typeof navigator === "undefined"
+      ? []
+      : navigator.languages.length > 0
+        ? navigator.languages
+        : [navigator.language];
+
+  for (const browserLanguage of browserLanguages) {
+    const language = browserLanguage.toLowerCase().split(/[-_]/, 1)[0];
+    if (isLanguage(language)) return language;
+  }
+
+  return "en";
+}
+
 export default function App() {
   // Keep the private CMS isolated from the existing public experience.
   if (window.location.pathname.replace(/\/+$/, "") === "/admin") {
@@ -39,7 +68,7 @@ export default function App() {
 }
 
 function PublicApp() {
-  const [lang, setLang] = useState<Language>("en");
+  const [lang, setLang] = useState<Language>(getInitialLanguage);
   const [hash, setHash] = useState(() => window.location.hash);
   const [initialDimension, setInitialDimension] = useState<DimensionKey>("all");
   const [modalMode, setModalMode] = useState<"about" | "dimensions" | null>(
@@ -64,6 +93,11 @@ function PublicApp() {
   useEffect(() => {
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+    try {
+      window.localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
+    } catch {
+      // Storage may be disabled by the browser.
+    }
 
     const titles: Record<Language, string> = {
       en: "WE ARE GABÈS — Discover Gabès",
