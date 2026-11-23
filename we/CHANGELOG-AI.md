@@ -31,3 +31,19 @@
 ### Manual steps
 - Complete the Supabase Auth and `.env.local` history checks in `docs/SECURITY-MANUAL-STEPS.md`.
 - Review and manually apply the two Phase 2 migrations through the chosen Supabase migration workflow.
+
+## Phase 3: Database and backend
+
+### Done
+- Added repeatable `updated_at` triggers, an admin-readable audit log with trigger-only writes, and simple-config full-text search for place translations.
+- Added an idempotent sample seed with one delegation, one dimension, one draft place, and EN/AR/FR translations, plus Supabase setup and first-admin instructions.
+- Added comment headers to the Phase 2 migrations so all migrations have a header.
+
+### Admin profile decision
+- Kept `admin_profiles` out of audit enrichment. Authorization uses JWT `app_metadata.role`, display names come from the authenticated user's `user_metadata`, and the audit log records `auth.uid()` as the stable actor identifier. The table remains referenced by the Settings connection check; no profile synchronization or name join is needed.
+
+### Skipped
+- No migration or seed was applied, and no Supabase project or production data was accessed.
+
+### Manual steps
+- Follow `supabase/README.md` to initialize the local Supabase CLI config, run migrations/seed locally, and create the first admin.

@@ -1,3 +1,4 @@
+-- WE ARE GABÈS: enforce valid place slugs and geographic coordinates.
 do $$
 begin
   if to_regclass('public.places') is not null then

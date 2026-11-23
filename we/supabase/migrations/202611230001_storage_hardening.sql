@@ -1,3 +1,4 @@
+-- WE ARE GABÈS: enforce the media bucket size and MIME allowlist.
 insert into storage.buckets (
   id,
   name,
