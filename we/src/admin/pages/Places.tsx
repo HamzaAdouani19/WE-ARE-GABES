@@ -92,23 +92,8 @@ export default function Places({ onCreate, onEdit }: PlacesProps) {
     setError(null);
 
     try {
-      // 1. Delete translations.
-      const { error: translationsError } = await supabase
-        .from('place_translations')
-        .delete()
-        .eq('place_id', place.id);
-
-      if (translationsError) throw translationsError;
-
-      // 2. Delete gallery database records.
-      const { error: galleryError } = await supabase
-        .from('place_gallery')
-        .delete()
-        .eq('place_id', place.id);
-
-      if (galleryError) throw galleryError;
-
-      // 3. Delete the place itself.
+      // The place translations and gallery rows are cascade-deleted by the
+      // existing foreign keys. Storage objects remain untouched.
       const { error: placeError } = await supabase
         .from('places')
         .delete()

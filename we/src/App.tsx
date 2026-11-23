@@ -1,8 +1,10 @@
 import { Suspense, lazy, useCallback, useEffect, useState } from "react";
 import { GlobeJourney } from "./components/GlobeJourney";
 import { AboutModal } from "./components/AboutModal";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import Footer from "./components/Footer";
 import { UI_COPY } from "./data/gabesData";
+import { getInitialLanguage, persistLanguage } from "./lib/language";
 import type { AppView, DimensionKey, Language } from "./types/gabes";
 
 const AdminApp = lazy(() => import("./admin/AdminApp"));
@@ -20,26 +22,39 @@ const LANG_OPTIONS: Array<{ code: Language; label: string }> = [
 ];
 
 export default function App() {
+  const [initialLanguage] = useState(getInitialLanguage);
+
+  useEffect(() => {
+    document.documentElement.lang = initialLanguage;
+    document.documentElement.dir = initialLanguage === "ar" ? "rtl" : "ltr";
+  }, [initialLanguage]);
+
   // Keep the private CMS isolated from the existing public experience.
   if (window.location.pathname.replace(/\/+$/, "") === "/admin") {
     return (
-      <Suspense
-        fallback={
-          <div className="min-h-screen grid place-items-center bg-[#f5f6f8] text-sm text-slate-500">
-            Loading CMS…
-          </div>
-        }
-      >
-        <AdminApp />
-      </Suspense>
+      <ErrorBoundary app="admin">
+        <Suspense
+          fallback={
+            <div className="min-h-screen grid place-items-center bg-[#f5f6f8] text-sm text-slate-500">
+              Loading CMS…
+            </div>
+          }
+        >
+          <AdminApp />
+        </Suspense>
+      </ErrorBoundary>
     );
   }
 
-  return <PublicApp />;
+  return (
+    <ErrorBoundary app="public">
+      <PublicApp />
+    </ErrorBoundary>
+  );
 }
 
 function PublicApp() {
-  const [lang, setLang] = useState<Language>("en");
+  const [lang, setLang] = useState<Language>(getInitialLanguage);
   const [hash, setHash] = useState(() => window.location.hash);
   const [initialDimension, setInitialDimension] = useState<DimensionKey>("all");
   const [modalMode, setModalMode] = useState<"about" | "dimensions" | null>(
@@ -64,6 +79,23 @@ function PublicApp() {
   useEffect(() => {
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+    persistLanguage(lang);
+
+    const titles: Record<Language, string> = {
+      en: "WE ARE GABÈS — Discover Gabès",
+      ar: "نحن قابس — اكتشف ولاية قابس",
+      fr: "WE ARE GABÈS — Découvrez Gabès",
+    };
+    const descriptions: Record<Language, string> = {
+      en: "Explore Gabès through places, delegations, cultural stories and interactive maps.",
+      ar: "اكتشف ولاية قابس من خلال الأماكن والمعتمديات والقصص الثقافية والخرائط التفاعلية.",
+      fr: "Explorez Gabès à travers ses lieux, délégations, histoires culturelles et cartes interactives.",
+    };
+
+    document.title = titles[lang];
+    document
+      .querySelector('meta[name="description"]')
+      ?.setAttribute("content", descriptions[lang]);
   }, [lang]);
 
   const handleOpenDimension = (dim: DimensionKey) => {
@@ -73,7 +105,7 @@ function PublicApp() {
 
   return (
     <div className="flex h-dvh w-screen flex-col overflow-hidden bg-[#060b14]">
-      <header className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 bg-[#060b14] px-3 py-2 text-stone-100 sm:gap-8 sm:px-6">
+      <header className="public-header flex shrink-0 items-center justify-between gap-3 border-b border-white/10 bg-[#060b14] px-3 py-2 text-stone-100 sm:gap-8 sm:px-6">
         <button
           type="button"
           onClick={() => setView("globe")}

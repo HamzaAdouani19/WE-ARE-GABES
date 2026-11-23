@@ -1,0 +1,110 @@
+{
+  "generatedOnPlatform": "win32",
+  "projectType": "webapp",
+  "devServer": {
+    "command": "npm",
+    "args": [
+      "run",
+      "dev",
+      "--",
+      "--host",
+      "127.0.0.1",
+      "--port",
+      "3000",
+      "--strictPort"
+    ],
+    "url": "http://127.0.0.1:3000/",
+    "env": {
+      "DISABLE_HMR": "true",
+      "VITE_SUPABASE_URL": "https://phase4-test.supabase.co",
+      "VITE_SUPABASE_ANON_KEY": "phase4-test-anon-key"
+    },
+    "readyTimeoutSeconds": 120
+  },
+  "setup": [
+    {
+      "command": "npm",
+      "args": ["ci"],
+      "timeoutSeconds": 600
+    }
+  ],
+  "assertions": [
+    {
+      "name": "strict-typecheck",
+      "kind": "process",
+      "command": "npm",
+      "args": ["run", "lint"],
+      "verificationMethod": "exit-code",
+      "expected": "0",
+      "timeoutSeconds": 180
+    },
+    {
+      "name": "eslint",
+      "kind": "process",
+      "command": "npm",
+      "args": ["run", "lint:eslint"],
+      "verificationMethod": "exit-code",
+      "expected": "0",
+      "timeoutSeconds": 180
+    },
+    {
+      "name": "tests-pass",
+      "kind": "process",
+      "command": "npm",
+      "args": ["test"],
+      "verificationMethod": "test-results",
+      "expected": "0",
+      "timeoutSeconds": 300
+    },
+    {
+      "name": "browser-smoke",
+      "kind": "process",
+      "command": "npm",
+      "args": ["run", "test:e2e"],
+      "verificationMethod": "exit-code",
+      "expected": "0",
+      "timeoutSeconds": 300
+    },
+    {
+      "name": "admin-route-serves",
+      "kind": "http-probe",
+      "startCommand": "npm",
+      "startArgs": [
+        "run",
+        "dev",
+        "--",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "4180",
+        "--strictPort"
+      ],
+      "url": "http://127.0.0.1:4180/admin",
+      "env": {
+        "DISABLE_HMR": "true",
+        "VITE_SUPABASE_URL": "https://phase4-test.supabase.co",
+        "VITE_SUPABASE_ANON_KEY": "phase4-test-anon-key"
+      },
+      "verificationMethod": "http-status",
+      "expected": "200",
+      "timeoutSeconds": 120
+    },
+    {
+      "name": "recorded-home-language",
+      "kind": "playwright-route",
+      "scriptPath": ".tsupgrader/runtime-validation/playwright-scripts/phase4-home-language.spec.ts",
+      "verificationMethod": "exit-code",
+      "expected": "0",
+      "timeoutSeconds": 120
+    },
+    {
+      "name": "production-build",
+      "kind": "process",
+      "command": "npm",
+      "args": ["run", "build"],
+      "verificationMethod": "exit-code",
+      "expected": "0",
+      "timeoutSeconds": 300
+    }
+  ]
+}

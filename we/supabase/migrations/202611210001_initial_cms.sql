@@ -101,38 +101,47 @@ alter table public.places enable row level security;
 alter table public.place_translations enable row level security;
 alter table public.place_gallery enable row level security;
 
+drop policy if exists "Admins can read admin profiles" on public.admin_profiles;
 create policy "Admins can read admin profiles"
 on public.admin_profiles for select to authenticated
 using (public.is_cms_admin());
 
+drop policy if exists "Admins can manage delegations" on public.delegations;
 create policy "Admins can manage delegations"
 on public.delegations for all to authenticated
 using (public.is_cms_admin()) with check (public.is_cms_admin());
 
+drop policy if exists "Public can read delegations" on public.delegations;
 create policy "Public can read delegations"
 on public.delegations for select to anon, authenticated
 using (true);
 
+drop policy if exists "Admins can manage cultural dimensions" on public.cultural_dimensions;
 create policy "Admins can manage cultural dimensions"
 on public.cultural_dimensions for all to authenticated
 using (public.is_cms_admin()) with check (public.is_cms_admin());
 
+drop policy if exists "Public can read cultural dimensions" on public.cultural_dimensions;
 create policy "Public can read cultural dimensions"
 on public.cultural_dimensions for select to anon, authenticated
 using (true);
 
+drop policy if exists "Admins can manage places" on public.places;
 create policy "Admins can manage places"
 on public.places for all to authenticated
 using (public.is_cms_admin()) with check (public.is_cms_admin());
 
+drop policy if exists "Public can read published places" on public.places;
 create policy "Public can read published places"
 on public.places for select to anon, authenticated
 using (publication_status = 'published');
 
+drop policy if exists "Admins can manage place translations" on public.place_translations;
 create policy "Admins can manage place translations"
 on public.place_translations for all to authenticated
 using (public.is_cms_admin()) with check (public.is_cms_admin());
 
+drop policy if exists "Public can read published place translations" on public.place_translations;
 create policy "Public can read published place translations"
 on public.place_translations for select to anon, authenticated
 using (
@@ -142,10 +151,12 @@ using (
   )
 );
 
+drop policy if exists "Admins can manage place gallery" on public.place_gallery;
 create policy "Admins can manage place gallery"
 on public.place_gallery for all to authenticated
 using (public.is_cms_admin()) with check (public.is_cms_admin());
 
+drop policy if exists "Public can read published place gallery" on public.place_gallery;
 create policy "Public can read published place gallery"
 on public.place_gallery for select to anon, authenticated
 using (
@@ -160,19 +171,36 @@ insert into storage.buckets (id, name, public)
 values ('gabes-media', 'gabes-media', true)
 on conflict (id) do nothing;
 
+drop policy if exists "Public can view CMS media" on storage.objects;
 create policy "Public can view CMS media"
 on storage.objects for select to anon, authenticated
 using (bucket_id = 'gabes-media');
 
+drop policy if exists "CMS admins can upload media" on storage.objects;
 create policy "CMS admins can upload media"
 on storage.objects for insert to authenticated
 with check (bucket_id = 'gabes-media' and public.is_cms_admin());
 
+drop policy if exists "CMS admins can update media" on storage.objects;
 create policy "CMS admins can update media"
 on storage.objects for update to authenticated
 using (bucket_id = 'gabes-media' and public.is_cms_admin())
 with check (bucket_id = 'gabes-media' and public.is_cms_admin());
 
+drop policy if exists "CMS admins can delete media" on storage.objects;
 create policy "CMS admins can delete media"
 on storage.objects for delete to authenticated
 using (bucket_id = 'gabes-media' and public.is_cms_admin());
+
+
+-- SQL privileges are separate from RLS policies. These grants allow the
+-- Supabase API roles to reach the tables; RLS still restricts which rows
+-- each role can read or modify.
+grant select on table public.delegations, public.cultural_dimensions, public.places,
+  public.place_translations, public.place_gallery to anon;
+
+grant select, insert, update, delete on table public.delegations,
+  public.cultural_dimensions, public.places, public.place_translations,
+  public.place_gallery to authenticated;
+
+grant select on table public.admin_profiles to authenticated;

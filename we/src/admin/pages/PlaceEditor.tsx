@@ -18,6 +18,16 @@ import {
 } from 'lucide-react';
 
 import { supabase } from '../../lib/supabase';
+import {
+  areValidCoordinates,
+  isValidSlug,
+} from '../../lib/validation';
+import {
+  createImageStorageName,
+  getImageUploadErrorMessage,
+  IMAGE_UPLOAD_ACCEPT,
+  validateImageUpload,
+} from '../utils/imageUploads';
 
 type Locale = 'en' | 'ar' | 'fr';
 type PublicationStatus = 'draft' | 'published';
@@ -243,8 +253,9 @@ export default function PlaceEditor({
       return;
     }
 
-    if (!file.type.startsWith('image/')) {
-      setError('Please select a valid image file.');
+    const validationError = validateImageUpload(file);
+    if (validationError) {
+      setError(getImageUploadErrorMessage(validationError));
       return;
     }
 
@@ -258,14 +269,7 @@ export default function PlaceEditor({
     try {
       const client = supabase;
 
-      const safeName = file.name
-        .normalize('NFKD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-zA-Z0-9._-]/g, '-')
-        .replace(/-+/g, '-');
-
-      const uniqueName =
-        `${Date.now()}-${crypto.randomUUID()}-${safeName}`;
+      const uniqueName = createImageStorageName(file);
 
       const { data, error: uploadError } = await client.storage
         .from(BUCKET_NAME)
@@ -673,7 +677,7 @@ export default function PlaceEditor({
       return;
     }
 
-    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+    if (!isValidSlug(slug)) {
       setError(
         'Slug must use lowercase letters, numbers and hyphens.',
       );
@@ -698,26 +702,17 @@ export default function PlaceEditor({
       return;
     }
 
+    if (!areValidCoordinates(form.latitude, form.longitude)) {
+      setError('Enter valid latitude and longitude values.');
+      return;
+    }
+
     const latitude = Number(form.latitude);
     const longitude = Number(form.longitude);
     const elevation =
       form.elevation_meters.trim() === ''
         ? 0
         : Number(form.elevation_meters);
-
-    if (
-      form.latitude.trim() === '' ||
-      form.longitude.trim() === '' ||
-      !Number.isFinite(latitude) ||
-      !Number.isFinite(longitude) ||
-      latitude < -90 ||
-      latitude > 90 ||
-      longitude < -180 ||
-      longitude > 180
-    ) {
-      setError('Enter valid latitude and longitude values.');
-      return;
-    }
 
     if (!Number.isFinite(elevation) || elevation < 0) {
       setError('Elevation must be a valid non-negative number.');
@@ -777,6 +772,7 @@ export default function PlaceEditor({
     setError(null);
     setSuccess(false);
 
+    const isCreating = !placeId;
     let saveStage = 'saving place record';
 
     try {
@@ -832,6 +828,20 @@ export default function PlaceEditor({
       setSuccess(true);
     } catch (err) {
       console.error(`Place editor: ${saveStage} failed:`, err);
+
+      if (isCreating) {
+        try {
+          const { error: cleanupError } = await supabase
+            .from('places')
+            .delete()
+            .eq('id', identifier);
+          if (cleanupError) throw cleanupError;
+        } catch {
+          // The original save error is more useful to the editor than a
+          // secondary cleanup failure.
+        }
+      }
+
       setError(
         `Save failed while ${saveStage}: ${getErrorMessage(err)}. Some earlier changes may already have been saved; review the place before retrying.`,
       );
@@ -1077,7 +1087,7 @@ export default function PlaceEditor({
               <input
                 ref={mainImageInputRef}
                 type="file"
-                accept="image/*"
+                accept={IMAGE_UPLOAD_ACCEPT}
                 hidden
                 onChange={(event) => {
                   const file = event.target.files?.[0];
@@ -1119,6 +1129,9 @@ export default function PlaceEditor({
                     <img
                       src={mainImageMedia.url}
                       alt="Main image preview"
+                      onError={(event) => {
+                        event.currentTarget.style.display = 'none';
+                      }}
                       style={{
                         width: '100%',
                         maxWidth: 280,
@@ -1350,7 +1363,7 @@ export default function PlaceEditor({
             <input
               ref={galleryImageInputRef}
               type="file"
-              accept="image/*"
+              accept={IMAGE_UPLOAD_ACCEPT}
               hidden
               onChange={(event) => {
                 const file = event.target.files?.[0];
@@ -1473,6 +1486,9 @@ export default function PlaceEditor({
                       <img
                         src={media.url}
                         alt={`Gallery image ${index + 1}`}
+                        onError={(event) => {
+                          event.currentTarget.style.display = 'none';
+                        }}
                         style={{
                           width: '100%',
                           maxWidth: 360,

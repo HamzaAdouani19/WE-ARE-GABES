@@ -1199,7 +1199,7 @@ export function GabesMapExplorer({
       duration: 1050,
       essential: true,
     });
-  }, [activePlace?.id, mapReady]);
+  }, [activePlace, mapReady]);
 
   useEffect(() => {
     document.title = activePlace
@@ -1243,10 +1243,10 @@ export function GabesMapExplorer({
     <div className="flex h-full w-full flex-col bg-[#FBF9F5] text-stone-900 lg:flex-row">
       {/* Editorial Explorer / Story Panel */}
 
-      <aside className="flex h-[52%] w-full flex-col border-b border-stone-200 bg-[#FBF9F5] lg:h-full lg:w-[460px] lg:shrink-0 lg:border-b-0 lg:border-e">
+      <aside className="public-explorer-panel flex h-[52%] w-full flex-col border-b border-stone-200 bg-[#FBF9F5] lg:h-full lg:w-[440px] lg:shrink-0 lg:border-b-0 lg:border-e">
         {!activePlace ? (
           <>
-            <div className="border-b border-stone-200 p-3.5 sm:p-5">
+            <div className="border-b border-stone-200 p-4 sm:px-5 sm:py-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="font-mono-tabular text-[11px] uppercase tracking-widest text-[#1f7d72]">
@@ -1300,7 +1300,7 @@ export function GabesMapExplorer({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder={copy.searchPlaces}
-                    className="w-full rounded-lg border border-stone-300 bg-white py-2 ps-9 pe-3 text-sm text-stone-900 placeholder:text-stone-400 focus:border-[#1f7d72] focus:outline-none"
+                    className="w-full rounded-lg border border-stone-300 bg-white py-2.5 ps-9 pe-3 text-sm text-stone-900 placeholder:text-stone-400 focus:border-[#1f7d72] focus:outline-none focus:ring-3 focus:ring-[#1f7d72]/10"
                   />
                 </div>
 
@@ -1318,7 +1318,7 @@ export function GabesMapExplorer({
                     onChange={(e) =>
                       handleDelegationChange(e.target.value)
                     }
-                    className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-xs font-medium text-stone-800 focus:border-[#1f7d72] focus:outline-none"
+                    className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2.5 text-xs font-medium text-stone-800 focus:border-[#1f7d72] focus:outline-none focus:ring-3 focus:ring-[#1f7d72]/10"
                   >
                     <option value="all">
                       {copy.allDelegations} ({places.length})
@@ -1469,6 +1469,9 @@ export function GabesMapExplorer({
                               src={place.image}
                               alt={place.title[lang]}
                               referrerPolicy="no-referrer"
+                              onError={(event) => {
+                                event.currentTarget.style.display = "none";
+                              }}
                               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                             />
                           </div>

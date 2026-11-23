@@ -11,6 +11,13 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import {
+  createImageStorageName,
+  getImageUploadErrorMessage,
+  IMAGE_UPLOAD_ACCEPT,
+  validateImageUpload,
+  type ImageUploadValidationError,
+} from '../utils/imageUploads';
 
 const BUCKET_NAME = 'gabes-media';
 
@@ -47,22 +54,38 @@ export default function MediaLibrary() {
     setIsLoading(true);
     setError('');
 
-    const { data, error: listError } = await client.storage
-      .from(BUCKET_NAME)
-      .list('', {
-        limit: 100,
-        offset: 0,
-        sortBy: { column: 'created_at', order: 'desc' },
-      });
+    const allFiles: Array<{
+      name: string;
+      id: string | null;
+      created_at: string | null;
+      updated_at: string | null;
+      metadata: { size?: number; mimetype?: string } | null;
+    }> = [];
+    let offset = 0;
+    const pageSize = 100;
 
-    if (listError) {
-      setError(listError.message);
-      setFiles([]);
-      setIsLoading(false);
-      return;
+    while (true) {
+      const { data: page, error: listError } = await client.storage
+        .from(BUCKET_NAME)
+        .list('', {
+          limit: pageSize,
+          offset,
+          sortBy: { column: 'created_at', order: 'desc' },
+        });
+
+      if (listError) {
+        setError(listError.message);
+        setFiles([]);
+        setIsLoading(false);
+        return;
+      }
+
+      allFiles.push(...(page ?? []));
+      if (!page || page.length < pageSize) break;
+      offset += pageSize;
     }
 
-    const mediaFiles: MediaFile[] = (data ?? [])
+    const mediaFiles: MediaFile[] = allFiles
       .filter(
         (file): file is typeof file & { id: string; name: string } =>
           Boolean(file.id && file.name),
@@ -97,12 +120,18 @@ export default function MediaLibrary() {
 
     if (!supabase || selectedFiles.length === 0) return;
 
-    const invalidFiles = selectedFiles.filter(
-      (file) => !file.type.startsWith('image/'),
-    );
+    const validationErrors = new Set<ImageUploadValidationError>();
+    for (const file of selectedFiles) {
+      const validationError = validateImageUpload(file);
+      if (validationError) validationErrors.add(validationError);
+    }
 
-    if (invalidFiles.length > 0) {
-      setError('Only image files are allowed.');
+    if (validationErrors.size > 0) {
+      setError(
+        [...validationErrors]
+          .map(getImageUploadErrorMessage)
+          .join(' '),
+      );
       return;
     }
 
@@ -114,13 +143,7 @@ export default function MediaLibrary() {
     const failedFiles: string[] = [];
 
     for (const file of selectedFiles) {
-      const safeName = file.name
-        .normalize('NFKD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-zA-Z0-9._-]/g, '-')
-        .replace(/-+/g, '-');
-
-      const filePath = `${Date.now()}-${crypto.randomUUID()}-${safeName}`;
+      const filePath = createImageStorageName(file);
 
       const { error: uploadError } = await supabase.storage
         .from(BUCKET_NAME)
@@ -163,6 +186,43 @@ export default function MediaLibrary() {
     setDeletingPath(path);
     setError('');
     setSuccess('');
+
+    try {
+      const [mainImageResult, galleryResult] = await Promise.all([
+        supabase
+          .from('places')
+          .select('id')
+          .or(`main_image.eq.${path},main_image.eq.gabes-media/${path}`)
+          .limit(1),
+        supabase
+          .from('place_gallery')
+          .select('id')
+          .or(`image_path.eq.${path},image_path.eq.gabes-media/${path}`)
+          .limit(1),
+      ]);
+
+      if (mainImageResult.error) throw mainImageResult.error;
+      if (galleryResult.error) throw galleryResult.error;
+
+      if (
+        (mainImageResult.data?.length ?? 0) > 0 ||
+        (galleryResult.data?.length ?? 0) > 0
+      ) {
+        setDeletingPath(null);
+        setError(
+          'This image is still referenced by a place or gallery and cannot be deleted.',
+        );
+        return;
+      }
+    } catch (err) {
+      setDeletingPath(null);
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Unable to verify image references.',
+      );
+      return;
+    }
 
     const { error: deleteError } = await supabase.storage
       .from(BUCKET_NAME)
@@ -224,7 +284,7 @@ export default function MediaLibrary() {
             {isUploading ? 'Uploading...' : 'Upload images'}
             <input
               type="file"
-              accept="image/*"
+              accept={IMAGE_UPLOAD_ACCEPT}
               multiple
               hidden
               disabled={isUploading}
