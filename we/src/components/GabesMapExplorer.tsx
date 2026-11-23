@@ -23,7 +23,6 @@ import {
   UI_COPY,
   normalizeSearch,
 } from "../data/gabesData";
-import { GABES_CULTURAL_ROUTE } from "../data/worldGeo";
 import { getPublicContent } from "../services/public-content.service";
 
 import type {
@@ -36,6 +35,7 @@ import type {
 } from "../types/gabes";
 
 import tunisia from "../data/tunisia.geo.json";
+import gabesBoundary from "../data/gabes-boundary.geo.json";
 
 interface GabesMapExplorerProps {
   lang: Language;
@@ -150,7 +150,7 @@ function getDimensionLabel(
   return dimensions.find((d) => d.key === dim)?.label[lang] ?? dim;
 }
 
-function applyTerrainAndRouteOverlay(
+function applyTerrainOverlay(
   map: maplibregl.Map,
   enableTerrain: boolean,
 ) {
@@ -200,50 +200,40 @@ function applyTerrainAndRouteOverlay(
     });
   }
 
-  const sourceId = "gabes-cultural-route";
-
-  if (!map.getSource(sourceId)) {
-    map.addSource(sourceId, {
+  // Official Gabes governorate boundary supplied as GeoJSON by the user.
+  if (!map.getSource("gabes-boundary")) {
+    map.addSource("gabes-boundary", {
       type: "geojson",
-      data: {
-        type: "Feature",
-        properties: {},
-        geometry: {
-          type: "LineString",
-          coordinates: GABES_CULTURAL_ROUTE,
-        },
-      },
+      data: gabesBoundary as unknown as maplibregl.GeoJSONSourceSpecification["data"],
     });
+  }
 
+  if (!map.getLayer("gabes-boundary-glow")) {
     map.addLayer({
-      id: "gabes-route-glow",
+      id: "gabes-boundary-glow",
       type: "line",
-      source: sourceId,
-      layout: {
-        "line-cap": "round",
-        "line-join": "round",
-      },
+      source: "gabes-boundary",
       paint: {
-        "line-color": "#5eead4",
-        "line-width": 6,
-        "line-opacity": 0.22,
+        "line-color": "#ef4444",
+        "line-width": 7,
+        "line-opacity": 0.2,
+        "line-blur": 3,
       },
+      layout: { "line-join": "round", "line-cap": "round" },
     });
+  }
 
+  if (!map.getLayer("gabes-boundary-outline")) {
     map.addLayer({
-      id: "gabes-route-line",
+      id: "gabes-boundary-outline",
       type: "line",
-      source: sourceId,
-      layout: {
-        "line-cap": "round",
-        "line-join": "round",
-      },
+      source: "gabes-boundary",
       paint: {
-        "line-color": "#5eead4",
-        "line-width": 2.2,
-        "line-dasharray": [2.5, 2],
-        "line-opacity": 0.9,
+        "line-color": "#ef4444",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1.5, 10, 2.5, 15, 3],
+        "line-opacity": 0.98,
       },
+      layout: { "line-join": "round", "line-cap": "round" },
     });
   }
 }
@@ -829,7 +819,7 @@ export function GabesMapExplorer({
 
     map.on("style.load", () => {
       try {
-        applyTerrainAndRouteOverlay(map, is3DRef.current);
+        applyTerrainOverlay(map, is3DRef.current);
       } catch (error) {
         console.warn("Map overlay initialization failed:", error);
       }
