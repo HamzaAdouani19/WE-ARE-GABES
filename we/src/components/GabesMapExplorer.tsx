@@ -1199,7 +1199,7 @@ export function GabesMapExplorer({
       duration: 1050,
       essential: true,
     });
-  }, [activePlace?.id, mapReady]);
+  }, [activePlace, mapReady]);
 
   useEffect(() => {
     document.title = activePlace

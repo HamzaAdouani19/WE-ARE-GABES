@@ -47,3 +47,19 @@
 
 ### Manual steps
 - Follow `supabase/README.md` to initialize the local Supabase CLI config, run migrations/seed locally, and create the first admin.
+
+## Phase 4: Tooling, tests, and CI
+
+### Done
+- Enabled TypeScript strict mode and added ESLint with `typescript-eslint` and React Hooks rules; retained `npm run lint` as the TypeScript check.
+- Added Vitest/Testing Library coverage for public-content mapping, language detection and persistence, coordinate/slug validation, and the localized ErrorBoundary.
+- Added a Playwright smoke test for the home page, Arabic RTL switching, and rejected admin login. All Supabase requests use a dummy host and are intercepted.
+- Added CI for type-checking, ESLint, unit and browser tests, production build, and the high-severity npm audit.
+- Added localized public/admin error boundaries with a reload action.
+- Moved the compiler from TypeScript 7.0.2 to 6.0.3 because `typescript-eslint` currently rejects TypeScript 7.
+
+### Skipped
+- No Supabase project or production data was accessed. The recording helper could not safely establish a Supabase mock for a separate admin recording; the repository Playwright smoke test covers that flow with explicit network mocks.
+
+### Manual steps
+- Run `npx playwright install chromium` once before the local browser test if Playwright's browser is not already installed. CI installs Chromium automatically.

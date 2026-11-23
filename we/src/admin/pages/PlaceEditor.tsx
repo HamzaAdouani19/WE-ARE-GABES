@@ -19,6 +19,10 @@ import {
 
 import { supabase } from '../../lib/supabase';
 import {
+  areValidCoordinates,
+  isValidSlug,
+} from '../../lib/validation';
+import {
   createImageStorageName,
   getImageUploadErrorMessage,
   IMAGE_UPLOAD_ACCEPT,
@@ -673,7 +677,7 @@ export default function PlaceEditor({
       return;
     }
 
-    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+    if (!isValidSlug(slug)) {
       setError(
         'Slug must use lowercase letters, numbers and hyphens.',
       );
@@ -698,26 +702,17 @@ export default function PlaceEditor({
       return;
     }
 
+    if (!areValidCoordinates(form.latitude, form.longitude)) {
+      setError('Enter valid latitude and longitude values.');
+      return;
+    }
+
     const latitude = Number(form.latitude);
     const longitude = Number(form.longitude);
     const elevation =
       form.elevation_meters.trim() === ''
         ? 0
         : Number(form.elevation_meters);
-
-    if (
-      form.latitude.trim() === '' ||
-      form.longitude.trim() === '' ||
-      !Number.isFinite(latitude) ||
-      !Number.isFinite(longitude) ||
-      latitude < -90 ||
-      latitude > 90 ||
-      longitude < -180 ||
-      longitude > 180
-    ) {
-      setError('Enter valid latitude and longitude values.');
-      return;
-    }
 
     if (!Number.isFinite(elevation) || elevation < 0) {
       setError('Elevation must be a valid non-negative number.');

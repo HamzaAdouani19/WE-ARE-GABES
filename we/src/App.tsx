@@ -1,8 +1,10 @@
 import { Suspense, lazy, useCallback, useEffect, useState } from "react";
 import { GlobeJourney } from "./components/GlobeJourney";
 import { AboutModal } from "./components/AboutModal";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import Footer from "./components/Footer";
 import { UI_COPY } from "./data/gabesData";
+import { getInitialLanguage, persistLanguage } from "./lib/language";
 import type { AppView, DimensionKey, Language } from "./types/gabes";
 
 const AdminApp = lazy(() => import("./admin/AdminApp"));
@@ -19,52 +21,36 @@ const LANG_OPTIONS: Array<{ code: Language; label: string }> = [
   { code: "fr", label: "FR" },
 ];
 
-const LANGUAGE_STORAGE_KEY = "we-are-gabes-language";
-
-function isLanguage(value: string | null): value is Language {
-  return value === "en" || value === "ar" || value === "fr";
-}
-
-function getInitialLanguage(): Language {
-  try {
-    const savedLanguage = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
-    if (isLanguage(savedLanguage)) return savedLanguage;
-  } catch {
-    // Storage may be disabled by the browser.
-  }
-
-  const browserLanguages =
-    typeof navigator === "undefined"
-      ? []
-      : navigator.languages.length > 0
-        ? navigator.languages
-        : [navigator.language];
-
-  for (const browserLanguage of browserLanguages) {
-    const language = browserLanguage.toLowerCase().split(/[-_]/, 1)[0];
-    if (isLanguage(language)) return language;
-  }
-
-  return "en";
-}
-
 export default function App() {
+  const [initialLanguage] = useState(getInitialLanguage);
+
+  useEffect(() => {
+    document.documentElement.lang = initialLanguage;
+    document.documentElement.dir = initialLanguage === "ar" ? "rtl" : "ltr";
+  }, [initialLanguage]);
+
   // Keep the private CMS isolated from the existing public experience.
   if (window.location.pathname.replace(/\/+$/, "") === "/admin") {
     return (
-      <Suspense
-        fallback={
-          <div className="min-h-screen grid place-items-center bg-[#f5f6f8] text-sm text-slate-500">
-            Loading CMS…
-          </div>
-        }
-      >
-        <AdminApp />
-      </Suspense>
+      <ErrorBoundary app="admin">
+        <Suspense
+          fallback={
+            <div className="min-h-screen grid place-items-center bg-[#f5f6f8] text-sm text-slate-500">
+              Loading CMS…
+            </div>
+          }
+        >
+          <AdminApp />
+        </Suspense>
+      </ErrorBoundary>
     );
   }
 
-  return <PublicApp />;
+  return (
+    <ErrorBoundary app="public">
+      <PublicApp />
+    </ErrorBoundary>
+  );
 }
 
 function PublicApp() {
@@ -93,11 +79,7 @@ function PublicApp() {
   useEffect(() => {
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
-    try {
-      window.localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
-    } catch {
-      // Storage may be disabled by the browser.
-    }
+    persistLanguage(lang);
 
     const titles: Record<Language, string> = {
       en: "WE ARE GABÈS — Discover Gabès",
