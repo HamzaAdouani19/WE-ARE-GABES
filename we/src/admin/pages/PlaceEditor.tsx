@@ -18,6 +18,12 @@ import {
 } from 'lucide-react';
 
 import { supabase } from '../../lib/supabase';
+import {
+  createImageStorageName,
+  getImageUploadErrorMessage,
+  IMAGE_UPLOAD_ACCEPT,
+  validateImageUpload,
+} from '../utils/imageUploads';
 
 type Locale = 'en' | 'ar' | 'fr';
 type PublicationStatus = 'draft' | 'published';
@@ -73,14 +79,6 @@ interface GalleryItem {
 }
 
 const BUCKET_NAME = 'gabes-media';
-const ALLOWED_IMAGE_TYPES = new Set([
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-  'image/gif',
-  'image/avif',
-]);
-const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 
 const emptyTranslation: TranslationForm = {
   title: '',
@@ -251,13 +249,9 @@ export default function PlaceEditor({
       return;
     }
 
-    if (
-      !ALLOWED_IMAGE_TYPES.has(file.type) ||
-      file.size > MAX_UPLOAD_BYTES
-    ) {
-      setError(
-        'Please select a JPEG, PNG, WebP, GIF or AVIF image up to 10 MB.',
-      );
+    const validationError = validateImageUpload(file);
+    if (validationError) {
+      setError(getImageUploadErrorMessage(validationError));
       return;
     }
 
@@ -271,14 +265,7 @@ export default function PlaceEditor({
     try {
       const client = supabase;
 
-      const safeName = file.name
-        .normalize('NFKD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-zA-Z0-9._-]/g, '-')
-        .replace(/-+/g, '-');
-
-      const uniqueName =
-        `${Date.now()}-${crypto.randomUUID()}-${safeName}`;
+      const uniqueName = createImageStorageName(file);
 
       const { data, error: uploadError } = await client.storage
         .from(BUCKET_NAME)
@@ -1105,7 +1092,7 @@ export default function PlaceEditor({
               <input
                 ref={mainImageInputRef}
                 type="file"
-                accept="image/*"
+                accept={IMAGE_UPLOAD_ACCEPT}
                 hidden
                 onChange={(event) => {
                   const file = event.target.files?.[0];
@@ -1381,7 +1368,7 @@ export default function PlaceEditor({
             <input
               ref={galleryImageInputRef}
               type="file"
-              accept="image/*"
+              accept={IMAGE_UPLOAD_ACCEPT}
               hidden
               onChange={(event) => {
                 const file = event.target.files?.[0];

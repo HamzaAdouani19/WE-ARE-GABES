@@ -11,6 +11,13 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import {
+  createImageStorageName,
+  getImageUploadErrorMessage,
+  IMAGE_UPLOAD_ACCEPT,
+  validateImageUpload,
+  type ImageUploadValidationError,
+} from '../utils/imageUploads';
 
 const BUCKET_NAME = 'gabes-media';
 
@@ -26,15 +33,6 @@ interface MediaFile {
   path: string;
   publicUrl: string;
 }
-
-const ALLOWED_IMAGE_TYPES = new Set([
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-  'image/gif',
-  'image/avif',
-]);
-const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 
 export default function MediaLibrary() {
   const [files, setFiles] = useState<MediaFile[]>([]);
@@ -122,15 +120,17 @@ export default function MediaLibrary() {
 
     if (!supabase || selectedFiles.length === 0) return;
 
-    const invalidFiles = selectedFiles.filter(
-      (file) =>
-        !ALLOWED_IMAGE_TYPES.has(file.type) ||
-        file.size > MAX_UPLOAD_BYTES,
-    );
+    const validationErrors = new Set<ImageUploadValidationError>();
+    for (const file of selectedFiles) {
+      const validationError = validateImageUpload(file);
+      if (validationError) validationErrors.add(validationError);
+    }
 
-    if (invalidFiles.length > 0) {
+    if (validationErrors.size > 0) {
       setError(
-        'Only JPEG, PNG, WebP, GIF or AVIF images up to 10 MB are allowed.',
+        [...validationErrors]
+          .map(getImageUploadErrorMessage)
+          .join(' '),
       );
       return;
     }
@@ -143,13 +143,7 @@ export default function MediaLibrary() {
     const failedFiles: string[] = [];
 
     for (const file of selectedFiles) {
-      const safeName = file.name
-        .normalize('NFKD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-zA-Z0-9._-]/g, '-')
-        .replace(/-+/g, '-');
-
-      const filePath = `${Date.now()}-${crypto.randomUUID()}-${safeName}`;
+      const filePath = createImageStorageName(file);
 
       const { error: uploadError } = await supabase.storage
         .from(BUCKET_NAME)
@@ -290,7 +284,7 @@ export default function MediaLibrary() {
             {isUploading ? 'Uploading...' : 'Upload images'}
             <input
               type="file"
-              accept="image/*"
+              accept={IMAGE_UPLOAD_ACCEPT}
               multiple
               hidden
               disabled={isUploading}

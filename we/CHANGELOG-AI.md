@@ -15,3 +15,19 @@
 
 ### Manual steps
 - After deployment, verify the favicon and social preview at the public site URL.
+
+## Phase 2: Security
+
+### Done
+- Added route-wide Vercel security headers and documented the CSP sources in `docs/CSP.md`.
+- Added repeatable storage and coordinate/slug constraint migrations; no migration was applied.
+- Enforced an image MIME allowlist and 5 MB maximum in admin uploads, with sanitized random filenames and EN/AR/FR validation errors.
+- Added Dependabot for npm and GitHub Actions and documented manual Supabase security steps.
+
+### Skipped
+- Supabase dashboard settings and repository secret-history checks were not changed or run because they require owner review.
+- No migration was applied and no production data was accessed.
+
+### Manual steps
+- Complete the Supabase Auth and `.env.local` history checks in `docs/SECURITY-MANUAL-STEPS.md`.
+- Review and manually apply the two Phase 2 migrations through the chosen Supabase migration workflow.
