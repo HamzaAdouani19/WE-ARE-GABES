@@ -142,3 +142,18 @@ html[dir="rtl"] .font-display {
     box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
   }
 }
+
+
+/* Mobile map explorer: full-screen map with a draggable details sheet. */
+@media (max-width: 1023px) {
+  .public-explorer-panel {
+    /* Keep the draggable sheet above MapLibre's marker pane and thumbnails. */
+    z-index: 1000;
+    isolation: isolate;
+    box-shadow: 0 -12px 34px rgba(15, 23, 42, 0.16);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .mobile-sheet-handle {
+    -webkit-tap-highlight-color: transparent;
+  }
+}

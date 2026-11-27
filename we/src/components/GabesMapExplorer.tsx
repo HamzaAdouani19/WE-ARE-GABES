@@ -629,6 +629,21 @@ export function GabesMapExplorer({
 
   const [searchQuery, setSearchQuery] = useState("");
   const [routeSlug, setRouteSlug] = useState(readPlaceSlug);
+  const [mobileSheetSnap, setMobileSheetSnap] = useState<"collapsed" | "half" | "expanded">("half");
+  const sheetDragStartY = useRef<number | null>(null);
+
+  const handleSheetPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    sheetDragStartY.current = event.clientY;
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+  const handleSheetPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (sheetDragStartY.current === null) return;
+    const delta = sheetDragStartY.current - event.clientY;
+    sheetDragStartY.current = null;
+    if (delta > 55) setMobileSheetSnap((current) => current === "collapsed" ? "half" : "expanded");
+    else if (delta < -55) setMobileSheetSnap((current) => current === "expanded" ? "half" : "collapsed");
+  };
+  const mobileSheetHeight = mobileSheetSnap === "collapsed" ? "116px" : mobileSheetSnap === "half" ? "54dvh" : "88dvh";
   const [mapMode, setMapMode] = useState<MapStyleMode>("hybrid");
   const [is3DTerrain, setIs3DTerrain] = useState(true);
   const [mapReady, setMapReady] = useState(false);
@@ -1230,10 +1245,24 @@ export function GabesMapExplorer({
   ------------------------------------------------------- */
 
   return (
-    <div className="flex h-full w-full flex-col bg-[#FBF9F5] text-stone-900 lg:flex-row">
+    <div className="relative flex h-full w-full flex-col overflow-hidden bg-[#FBF9F5] text-stone-900 lg:flex-row">
       {/* Editorial Explorer / Story Panel */}
 
-      <aside className="public-explorer-panel flex h-[52%] w-full flex-col border-b border-stone-200 bg-[#FBF9F5] lg:h-full lg:w-[440px] lg:shrink-0 lg:border-b-0 lg:border-e">
+      <aside
+        style={{ "--mobile-sheet-height": mobileSheetHeight } as React.CSSProperties}
+        className="public-explorer-panel absolute inset-x-0 bottom-0 z-20 flex h-[var(--mobile-sheet-height)] w-full flex-col overflow-hidden rounded-t-2xl border-t border-stone-200 bg-[#FBF9F5] transition-[height] duration-300 ease-out lg:static lg:z-auto lg:h-full lg:w-[440px] lg:shrink-0 lg:rounded-none lg:border-t-0 lg:border-e"
+      >
+        <div
+          className="mobile-sheet-handle flex h-9 shrink-0 cursor-grab touch-none items-center justify-center lg:hidden"
+          onPointerDown={handleSheetPointerDown}
+          onPointerUp={handleSheetPointerUp}
+          onDoubleClick={() => setMobileSheetSnap((current) => current === "expanded" ? "half" : "expanded")}
+          role="button"
+          aria-label="Drag to resize details panel"
+          title="Drag up or down"
+        >
+          <span className="h-1.5 w-12 rounded-full bg-stone-400" />
+        </div>
         {!activePlace ? (
           <>
             <div className="border-b border-stone-200 p-4 sm:px-5 sm:py-4">
@@ -1693,7 +1722,7 @@ export function GabesMapExplorer({
 
       {/* Main MapLibre Interactive Viewport */}
 
-      <div className="relative h-[48%] flex-1 lg:h-full">
+      <div className="absolute inset-0 h-full w-full lg:relative lg:h-full lg:min-w-0 lg:flex-1">
         <div ref={mapContainerRef} className="h-full w-full" />
 
         {/* Floating Map Controls */}
